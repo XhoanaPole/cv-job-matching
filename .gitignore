@@ -34,7 +34,6 @@ venv.bak/
 
 # Output files
 *.json
-*.txt
 *.index
 faiss.index
 

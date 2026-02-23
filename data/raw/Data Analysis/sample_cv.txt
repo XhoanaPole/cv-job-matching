@@ -1,0 +1,39 @@
+﻿NAME SURNAME
+Email: name.surname@email.com
+Phone: +355 69 123 4567
+Location: Tirana, Albania
+LinkedIn: linkedin.com/in/namesurname
+
+
+SUMMARY
+Recent graduate with a Bachelor's degree in Computer Science and strong analytical skills. Passionate about transforming data into actionable insights. Proficient in Python, SQL, and data visualization tools. Seeking a Junior Data Analyst position to apply statistical analysis and problem-solving skills in a dynamic environment.
+
+
+WORK EXPERIENCE
+Data Analysis Intern
+Tech Solutions Albania | Tirana, Albania
+June 2024 - September 2024 | Remote
+* Analyzed customer behavior data using Python and SQL to identify trends
+* Created interactive dashboards in Tableau visualizing KPIs for management
+* Collaborated with marketing team to optimize campaign performance
+* Cleaned and processed datasets containing over 50,000 records
+* Presented weekly reports to stakeholders on data findings
+
+
+Student Research Assistant
+Metropolitan Tirana University | Tirana, Albania
+January 2023 - May 2024 | On-site
+* Conducted statistical analysis on survey data using Excel and SPSS
+* Assisted in data collection and database management
+* Prepared visualizations and reports for academic publications
+EDUCATION
+Bachelor of Science in Computer Science
+Metropolitan Tirana University | Tirana, Albania
+September 2020 - June 2024
+ GPA: 3.7/4.0
+Relevant Coursework: Statistics, Database Systems, Machine Learning, Data Mining
+SKILLS
+Technical Skills: Python, SQL, Excel, Tableau, Power BI, Pandas, NumPy, Matplotlib, Git
+Statistical Analysis: Descriptive statistics, Hypothesis testing, Regression analysis
+Soft Skills: Problem-solving, Communication, Teamwork, Attention to detail, Time management
+Languages: Albanian (Native), English (Fluent), Italian (Intermediate)

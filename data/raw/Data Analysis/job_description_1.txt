@@ -1,0 +1,35 @@
+﻿JOB TITLE: Junior Data Analyst
+COMPANY: Digital Marketing Agency
+LOCATION: Tirana, Albania
+TYPE: Full-time | Hybrid (3 days on-site, 2 days remote)
+
+
+SUMMARY
+We are seeking a motivated Junior Data Analyst to join our growing analytics team. You will work closely with senior analysts to support data-driven decision making across marketing campaigns.
+
+
+RESPONSIBILITIES
+- Collect, clean, and analyze marketing campaign data
+- Create dashboards and reports using Tableau or Power BI
+- Perform statistical analysis to identify trends and patterns
+- Collaborate with marketing teams to optimize campaign performance
+- Maintain and update databases using SQL
+- Present findings to stakeholders in clear, visual formats
+
+
+REQUIREMENTS
+- Bachelor's degree in Computer Science, Statistics, Mathematics, or related field
+- Proficiency in SQL and Excel
+- Experience with Python or R for data analysis
+- Knowledge of data visualization tools (Tableau, Power BI)
+- Strong analytical and problem-solving skills
+- Excellent communication skills in English
+- Ability to work in a team environment
+- Attention to detail and accuracy
+
+
+PREFERRED QUALIFICATIONS
+- Internship or project experience in data analysis
+- Familiarity with Pandas, NumPy, Matplotlib
+- Understanding of statistical methods
+- Experience with Git version control
