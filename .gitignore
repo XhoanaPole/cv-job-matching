@@ -1,0 +1,77 @@
+# Environment variables and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+env/
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+venv/
+
+# Virtual environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Output files
+*.json
+*.txt
+*.index
+faiss.index
+
+!requirements.txt
+*.log
+error_batch_*.txt
+batch_*_result.json
+description_result.json
+verification_result.json
+
+# Data files (logs, extracted archives)
+aura-departmental/data/extracted/
+aura-departmental/data/kura-logs-*/
+*.log.gz
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.bin
+ 
+# Notebook and Jupyter
+.ipynb_checkpoints/
+
+# Editor / OS extras
+.vs/
+desktop.ini
+
+# FAISS and vector store
+data/processed/
+*.faiss
+
+# Backup and build artifacts
+*.bak
+venv/
+data/processed/
+venv/
+data/processed/
