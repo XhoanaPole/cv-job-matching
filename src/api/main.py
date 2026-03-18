@@ -1,13 +1,17 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import sys
 import os
+import tempfile
+import shutil
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from preprocessing.text_cleaning import TextCleaner
+from preprocessing.document_parser import DocumentParser
 from embeddings.embedder import TextEmbedder
 from vector_store.faiss_index import FAISSJobIndex
 from matching.matcher import CVJobMatcher
@@ -18,12 +22,29 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Enable CORS for the frontend application
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Global instances (initialized on startup)
 matcher = None
 
 class JobDescription(BaseModel):
     job_id: str
     description: str
+
+class CompareJob(BaseModel):
+    job_id: str
+    description: str
+
+class CompareRequest(BaseModel):
+    cv_text: str
+    jobs: List[CompareJob]
 
 class CVUpload(BaseModel):
     cv_id: str
@@ -205,6 +226,97 @@ async def match_cv_file(file: UploadFile = File(...), top_k: int = 10):
     )
     
     return result
+
+@app.post("/compare/upload", response_model=MatchResponse)
+async def compare_dynamic_upload(
+    cv_file: UploadFile = File(...),
+    job_files: List[UploadFile] = File(default=[]),
+    job_urls: List[str] = Form(default=[])
+):
+    """
+    Compare a single CV against a list of job descriptions via multi-part file upload and/or URLs.
+    Supports .txt, .pdf, .docx, and live web scraping.
+    """
+    if not matcher:
+        raise HTTPException(status_code=500, detail="Core models not initialized")
+    
+    if not job_files and not job_urls:
+        raise HTTPException(status_code=400, detail="No job descriptions or URLs provided")
+        
+    doc_parser = DocumentParser()
+    temp_dir = tempfile.mkdtemp()
+    
+    try:
+        # Save and parse CV
+        cv_path = os.path.join(temp_dir, cv_file.filename)
+        with open(cv_path, "wb") as f:
+            f.write(await cv_file.read())
+            
+        cv_text = doc_parser.parse_file(cv_path)
+        if not cv_text:
+            raise HTTPException(status_code=400, detail="Failed to parse CV document. Ensure it is a valid format.")
+            
+        # Save and parse Jobs
+        parsed_jobs = []
+        parsed_job_ids = []
+        for j_file in job_files:
+            if not j_file.filename:
+                continue
+            j_path = os.path.join(temp_dir, j_file.filename)
+            with open(j_path, "wb") as f:
+                f.write(await j_file.read())
+            
+            j_text = doc_parser.parse_file(j_path)
+            if j_text:
+                parsed_jobs.append(j_text)
+                parsed_job_ids.append(j_file.filename.split('.')[0])
+                
+        # Parse URLs
+        for url in job_urls:
+            url_str = url.strip()
+            if not url_str:
+                continue
+                
+            from urllib.parse import urlparse
+            domain = urlparse(url_str).netloc.replace('www.', '')
+            j_text = doc_parser.parse_url(url_str)
+            if j_text:
+                parsed_jobs.append(j_text)
+                parsed_job_ids.append(f"WebDomain_{domain.split('.')[0]}")
+                
+        if not parsed_jobs:
+            raise HTTPException(status_code=400, detail="Failed to parse any of the job description documents or URLs.")
+            
+        # 1. Clean jobs
+        cleaned_results = matcher.cleaner.clean_batch(parsed_jobs)
+        if not cleaned_results:
+            raise HTTPException(status_code=400, detail="Job descriptions are too short or invalid after text extraction.")
+        
+        cleaned_texts = [r['cleaned_text'] for r in cleaned_results]
+        valid_job_ids = [parsed_job_ids[r['original_index']] for r in cleaned_results]
+        
+        # 2. Embed jobs dynamically
+        job_embeddings = matcher.embedder.embed_batch(cleaned_texts, show_progress=False)
+        
+        # 3. Create isolated FAISS index
+        temp_index = FAISSJobIndex(embedding_dim=matcher.embedder.embedding_dim)
+        temp_index.add_jobs(job_embeddings=job_embeddings, job_ids=valid_job_ids, job_texts=cleaned_texts)
+        
+        # 4. Create isolated Matcher
+        temp_matcher = CVJobMatcher(matcher.cleaner, matcher.embedder, temp_index)
+        
+        # 5. Evaluate CV
+        result = temp_matcher.match_cv_to_jobs(
+            cv_text=cv_text,
+            cv_id=cv_file.filename,
+            top_k=len(valid_job_ids)
+        )
+        
+        return result
+        
+    finally:
+        # Clean up temporary files
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
 @app.get("/stats")
 async def get_stats():

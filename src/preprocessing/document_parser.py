@@ -4,6 +4,9 @@ Supports: .txt, .docx, .pdf
 """
 
 import os
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 from pathlib import Path
 from typing import Optional
 
@@ -62,6 +65,42 @@ class DocumentParser:
         else:
             print(f"  Unsupported file format: {extension}")
             print(f"   Supported formats: {self.supported_formats}")
+            return None
+            
+    def parse_url(self, url: str) -> Optional[str]:
+        """
+        Fetch HTML from URL and strip purely human readable text.
+        Ignores scripts, styles, and footers.
+        """
+        try:
+            # Impersonate browser to prevent 403 blocks
+            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Remove purely navigational or scripted elements
+            for element in soup(["script", "style", "nav", "footer", "header", "aside"]):
+                element.extract()
+                
+            # Get clean text separated by spaces
+            text = soup.get_text(separator=' ')
+            
+            # Strip excessive newlines and spaces
+            lines = (line.strip() for line in text.splitlines())
+            chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+            clean_text = '\\n'.join(chunk for chunk in chunks if chunk)
+            
+            if len(clean_text) > 100:
+                print(f" Extracted {len(clean_text)} characters from {url}")
+                return clean_text
+            else:
+                print(f" URL content too short for extraction: {url}")
+                return None
+                
+        except Exception as e:
+            print(f" Error scraping URL {url}: {e}")
             return None
     
     def _parse_txt(self, file_path: Path) -> Optional[str]:

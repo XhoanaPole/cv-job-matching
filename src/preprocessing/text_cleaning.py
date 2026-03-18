@@ -19,6 +19,13 @@ class TextCleaner:
         self.remove_urls = remove_urls
         self.min_length = min_length
         
+        # Precompile regular expressions for performance
+        self._email_pattern = re.compile(r'\S+@\S+')
+        self._phone_pattern = re.compile(r'\+?\d[\d\s\-\(\)]{7,}\d')
+        self._url_pattern = re.compile(r'http\S+|www\.\S+')
+        self._special_chars_pattern = re.compile(r'[^a-z0-9\s\.\,\-]')
+        self._whitespace_pattern = re.compile(r'\s+')
+        
     def clean(self, text: str) -> Optional[str]:
         """
         Clean a single text document.
@@ -37,21 +44,21 @@ class TextCleaner:
         
         # Remove emails
         if self.remove_emails:
-            text = re.sub(r'\S+@\S+', '', text)
+            text = self._email_pattern.sub('', text)
         
         # Remove phone numbers (various formats)
         if self.remove_phone:
-            text = re.sub(r'\+?\d[\d\s\-\(\)]{7,}\d', '', text)
+            text = self._phone_pattern.sub('', text)
         
         # Remove URLs
         if self.remove_urls:
-            text = re.sub(r'http\S+|www\.\S+', '', text)
+            text = self._url_pattern.sub('', text)
         
         # Remove special characters but keep spaces and basic punctuation
-        text = re.sub(r'[^a-z0-9\s\.\,\-]', ' ', text)
+        text = self._special_chars_pattern.sub(' ', text)
         
         # Normalize whitespace
-        text = re.sub(r'\s+', ' ', text)
+        text = self._whitespace_pattern.sub(' ', text)
         text = text.strip()
         
         # Check minimum length
