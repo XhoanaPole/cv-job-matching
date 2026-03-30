@@ -6,6 +6,10 @@ import sys
 import os
 import tempfile
 import shutil
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -15,6 +19,7 @@ from preprocessing.document_parser import DocumentParser
 from embeddings.embedder import TextEmbedder
 from vector_store.faiss_index import FAISSJobIndex
 from matching.matcher import CVJobMatcher
+from matching.llm_summary import enrich_matches_with_llm
 
 app = FastAPI(
     title="Smart CV Job Matching API",
@@ -311,6 +316,10 @@ async def compare_dynamic_upload(
             cv_id=cv_file.filename,
             top_k=len(valid_job_ids)
         )
+        
+        # 6. Enrich with LLM Summaries (Parallel)
+        if 'matches' in result:
+            result['matches'] = enrich_matches_with_llm(result['matches'])
         
         return result
         

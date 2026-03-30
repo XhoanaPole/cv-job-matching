@@ -59,11 +59,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
+            
             // Re-apply tilts if switching back to interactive pages
             applyTiltToCards('.upload-card');
+            
+            // Re-render chart if navigating to analytics
+            if (targetId === 'view-analytics') {
+                renderChart();
+            }
         });
     });
 
+    // Match Details Routing (Back Button)
+    const backToResultsBtn = document.getElementById('back-to-results-btn');
+    if (backToResultsBtn) {
+        backToResultsBtn.addEventListener('click', () => {
+            document.getElementById('view-match-details').classList.add('hidden');
+            document.getElementById('view-match-details').classList.remove('active-view');
+            
+            document.getElementById('view-dashboard').classList.remove('hidden');
+            document.getElementById('view-dashboard').classList.add('active-view');
+            
+            // Re-apply tilts to match cards since they were in display:none
+            applyTiltToCards('.match-card');
+        });
+    }
 
     // CV Elements
     const cvDropZone = document.getElementById('cv-drop-zone');
@@ -385,13 +405,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const template = document.getElementById('match-card-template');
+        const currentSessionHistory = [];
 
         data.matches.forEach((match, index) => {
             const clone = template.content.cloneNode(true);
             const card = clone.querySelector('.match-card');
             card.style.animationDelay = `${index * 0.15}s`;
 
-            clone.querySelector('.job-id').textContent = cleanJobId(match.job_id);
+            const jobTitle = cleanJobId(match.job_id);
+            clone.querySelector('.job-id').textContent = jobTitle;
             
             const gap = match.gap_analysis;
             
@@ -399,68 +421,74 @@ document.addEventListener('DOMContentLoaded', () => {
             let percentScore = Math.max(0, match.similarity_score * 100);
             if (percentScore > 100) percentScore = 100;
             
+            // Save to memory tracker
+            currentSessionHistory.push({
+                job: jobTitle,
+                score: Math.round(percentScore),
+                date: new Date().toLocaleDateString()
+            });
+            
             clone.querySelector('.score-value').textContent = Math.round(percentScore);
 
-            // Animate SVG Ring
+            // Populate the new summary sentence dynamically
+            clone.querySelector('.summary-job-title').textContent = jobTitle;
+
+            // Animate SVG Ring and Calculate Label
             setTimeout(() => {
                 const circle = card.querySelector('.progress-ring__circle');
-                const radius = circle.r.baseVal.value; // 42
-                const circumference = radius * 2 * Math.PI; // 263.89
-                // Correctly calculate offset backwards for a smooth circle fill
+                const radius = circle.r.baseVal.value; // 30
+                const circumference = radius * 2 * Math.PI; // ~188.49
                 const offset = circumference - (percentScore / 100) * circumference;
                 circle.style.strokeDashoffset = offset;
                 
+                let fitLabel = "moderate fit";
+                let fitColor = "var(--warning)";
+
                 // Change stroke-color gradient dynamically based on score
-                if (percentScore > 80) {
+                if (percentScore > 75) {
                     circle.style.stroke = "url(#gradientStroke)";
+                    fitLabel = "strong fit";
+                    fitColor = "var(--primary-light)";
                 } else if (percentScore > 40) {
                     circle.style.stroke = "var(--warning)";
                 } else {
                     circle.style.stroke = "var(--danger)";
+                    fitLabel = "weak fit";
+                    fitColor = "var(--danger)";
                 }
+
+                const labelEl = card.querySelector('.summary-fit-label');
+                labelEl.textContent = fitLabel;
+                labelEl.style.color = fitColor;
+
             }, 100);
 
-            const strengthsContainer = clone.querySelector('.strengths-tags');
-            const oppsContainer = clone.querySelector('.opportunities-tags');
+            // Set up Page Navigation logic instead of accordion
+            const readMoreBtn = clone.querySelector('.read-more-btn');
+            const summaryText = match.llm_summary || "We analyzed your CV alongside the job description. You are a strong match for this role.";
 
-            if (gap && !gap.error) {
-                if (!gap.matched_skills || gap.matched_skills.length === 0) {
-                    strengthsContainer.innerHTML = '<span class="insight-text">No technical overlap detected.</span>';
-                } else {
-                    gap.matched_skills.forEach(skill => {
-                        const span = document.createElement('span');
-                        span.className = 'tag strength';
-                        span.textContent = skill;
-                        strengthsContainer.appendChild(span);
-                    });
-                }
-
-                if (!gap.missing_skills || gap.missing_skills.length === 0) {
-                    oppsContainer.innerHTML = '<span class="insight-text" style="color:var(--success)">Optimal contextual overlap.</span>';
-                } else {
-                    gap.missing_skills.slice(0, 10).forEach(skill => {
-                        const span = document.createElement('span');
-                        span.className = 'tag opportunity';
-                        span.textContent = skill;
-                        oppsContainer.appendChild(span);
-                    });
+            if (readMoreBtn) {
+                readMoreBtn.addEventListener('click', () => {
+                    // Navigate to details page
+                    document.getElementById('view-dashboard').classList.add('hidden');
+                    document.getElementById('view-dashboard').classList.remove('active-view');
                     
-                    if (gap.missing_skills.length > 10) {
-                        const span = document.createElement('span');
-                        span.className = 'tag';
-                        span.style.background = 'transparent';
-                        span.style.border = 'none';
-                        span.textContent = `+ ${gap.missing_skills.length - 10} more...`;
-                        oppsContainer.appendChild(span);
-                    }
-                }
-            } else {
-                strengthsContainer.innerHTML = '<span class="insight-text">Gap telemetry unavailable.</span>';
-                oppsContainer.innerHTML = '<span class="insight-text">Gap telemetry unavailable.</span>';
+                    document.getElementById('view-match-details').classList.remove('hidden');
+                    document.getElementById('view-match-details').classList.add('active-view');
+                    
+                    // Populate details
+                    document.getElementById('details-job-title').textContent = jobTitle;
+                    document.getElementById('details-ai-summary').textContent = summaryText;
+                });
             }
 
             matchesContainer.appendChild(clone);
         });
+
+        // Persist Data to LocalStorage for Analytics
+        const overallHistory = JSON.parse(localStorage.getItem('matchai-history')) || [];
+        const combinedHistory = [...overallHistory, ...currentSessionHistory];
+        localStorage.setItem('matchai-history', JSON.stringify(combinedHistory));
 
         // Apply interactive 3D physics to newly rendered match cards
         applyTiltToCards('.match-card');
@@ -529,5 +557,77 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => circle.remove(), 600);
         }
     });
+
+    // --- Chart.js Analytics Implementation ---
+    let myChart = null;
+
+    function renderChart() {
+        const ctx = document.getElementById('analyticsChart');
+        if (!ctx) return;
+
+        const historyRaw = JSON.parse(localStorage.getItem('matchai-history')) || [];
+        
+        // Take last 15 points to prevent overcrowding
+        const historyData = historyRaw.slice(-15);
+        
+        const labels = historyData.length ? historyData.map(h => h.job.length > 20 ? h.job.substring(0,20)+'...' : h.job) : ['No Data'];
+        const values = historyData.length ? historyData.map(h => h.score) : [0];
+
+        // Fetch dynamic color from active theme engine
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primaryColor = rootStyles.getPropertyValue('--primary-light').trim() || '#60a5fa';
+
+        if (myChart) {
+            myChart.destroy();
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Match Score (%)',
+                    data: values,
+                    borderColor: primaryColor,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: primaryColor,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#f8fafc', font: { family: "'Outfit', sans-serif", size: 14 } } },
+                    tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleFont: { family: "'Outfit', sans-serif" }, bodyFont: { family: "'Outfit', sans-serif" }, padding: 12, cornerRadius: 8 }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8', font: { family: "'Outfit', sans-serif" } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { family: "'Outfit', sans-serif" }, maxRotation: 45, minRotation: 45 }
+                    }
+                }
+            }
+        });
+    }
+
+    const clearBtn = document.getElementById('clear-history-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+             localStorage.removeItem('matchai-history');
+             renderChart();
+        });
+    }
 
 });
