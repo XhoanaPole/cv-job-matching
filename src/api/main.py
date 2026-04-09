@@ -203,6 +203,10 @@ async def match_cv(request: MatchRequest):
         top_k=request.top_k
     )
     
+    # Enrich with LLM Summaries
+    if 'matches' in result:
+        result['matches'] = enrich_matches_with_llm(result['matches'])
+    
     return result
 
 @app.post("/match/upload", response_model=MatchResponse)
@@ -229,6 +233,10 @@ async def match_cv_file(file: UploadFile = File(...), top_k: int = 10):
         cv_id=file.filename,
         top_k=top_k
     )
+    
+    # Enrich with LLM Summaries
+    if 'matches' in result:
+        result['matches'] = enrich_matches_with_llm(result['matches'])
     
     return result
 
