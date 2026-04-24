@@ -5,39 +5,65 @@ import concurrent.futures
 
 
 def generate_single_summary(match_info):
-    gap = match_info.get('gap_analysis', {})
-    raw_score = match_info.get('similarity_score', 0)
-    score = min(100.0, max(0.0, raw_score * 100.0))
-    matched = gap.get('matched_skills', [])[:8]
-    missing = gap.get('missing_skills', [])[:8]
-    matched_str = ', '.join(matched) if matched else "None"
-    missing_str = ', '.join(missing) if missing else "None"
+    gap       = match_info.get('gap_analysis', {})
+    breakdown = match_info.get('score_breakdown', {})
+    fit_category = match_info.get('fit_category', 'moderate fit')
+
+    # --- Score display ---
+    final_score   = breakdown.get('final_hybrid', match_info.get('similarity_score', 0) * 100)
+    semantic_pts  = breakdown.get('semantic_points',  0)
+    skills_pts    = breakdown.get('skills_points',    0)
+    domain_pts    = breakdown.get('domain_points',    0)
+    edu_pts       = breakdown.get('education_points', 0)
+    sen_pts       = breakdown.get('seniority_points', 0)
+
+    # --- Domain & profile labels ---
+    cv_domain   = breakdown.get('cv_domain',   'unknown')
+    job_domain  = breakdown.get('job_domain',  'unknown')
+    dom_compat  = breakdown.get('domain_compatibility', 'unknown')
+    cv_edu      = breakdown.get('cv_education',  'unknown')
+    job_edu     = breakdown.get('job_education', 'not specified')
+    cv_sen      = breakdown.get('cv_seniority',  'unknown')
+    job_sen     = breakdown.get('job_seniority', 'unknown')
+
+    # --- Skills lists ---
+    matched  = gap.get('matched_skills', [])[:8]
+    missing  = gap.get('missing_skills', [])[:8]
+    matched_str = ', '.join(matched) if matched else 'None'
+    missing_str = ', '.join(missing) if missing else 'None'
 
     prompt = f"""
 You are MatchAI, a friendly but highly analytical career assistant.
 Your job is to cleanly analyze matching skills and explain CV-to-job matching results in a way that feels human, supportive, and easy to understand — like a mentor.
-- CRITICAL: You MUST filter these lists down to ONLY actual professional skills. This includes Hard Skills, Soft Skills, Tooling, and Certifications.
-- Format skills in Title Case, except for acronyms which must be ALL CAPS (e.g., 'EHR', 'Internal Medicine', 'Patient Care', 'ACLS'). Do NOT use ALL CAPS for regular words. Remove vague phrases.
-- CRITICAL TONE: You are speaking DIRECTLY to the candidate. Address them as 'you' and 'your' (e.g., 'You are a strong match', 'Your skills in...'). NEVER refer to 'the candidate' in the third person.
-- CRITICAL ALIGNMENT: Your written analysis (Strengths, Gaps, Advice, Overall) MUST form a perfectly logical narrative that aligns the exact Match Score percentage with the Matched/Missing skills. Do not contradict the score.
+
+- CRITICAL: You MUST filter the skills lists down to ONLY actual professional skills. This includes Hard Skills, Soft Skills, Tooling, and Certifications. Delete noise words like "Able", "LI", "Brand".
+- Format skills in Title Case, except for acronyms which must be ALL CAPS (e.g., 'EHR', 'SEO').
+- CRITICAL TONE: You are speaking DIRECTLY to the candidate. Address them as 'you' and 'your'. NEVER refer to 'the candidate'. Do NOT use exact numbers or fractions in your text—keep it conceptual.
+- CRITICAL ALIGNMENT: Your written analysis MUST perfectly align with the score. Note that domain matching is extremely important. If their domain matches, praise it. If not, point it out.
 - Keep response under 150 words total excluding the skills lists.
-DATA:
-FAISS Semantic Match Score: {score:.1f}%
-Noisy Matched Skills: {matched_str}
-Noisy Missing Skills: {missing_str}
+
+DATA TO ANALYZE:
+Overall Match Score     : {final_score:.1f}% ({fit_category})
+Your domain             : {cv_domain}
+Job domain              : {job_domain} (Match: {dom_compat})
+Your education          : {cv_edu} vs Required: {job_edu}
+Your seniority          : {cv_sen} vs Required: {job_sen}
+Raw Matched Skills      : {matched_str}
+Raw Missing Skills      : {missing_str}
+
 Now respond using EXACT structure:
 Clean_Matched_Skills:
 [comma separated list of actual professional skills (hard or soft)]
 Clean_Missing_Skills:
 [comma separated list of actual professional skills (hard or soft)]
 Strengths:
-Explain clearly why your matched skills make you a strong fit for this role.
+Explain clearly why your matched skills and profile make you a strong fit for this role.
 Gaps:
-Explain what skills you are missing and why they matter for this job.
+What you are missing conceptually. Do not use numbers. Only mention domain/education if there's a mismatch.
 Advice:
-Give 2–3 very practical next steps for you to improve.
+Give 2–3 very practical next steps or courses for you to improve.
 Overall:
-Reference your {score:.1f}% match score. Explain whether you are a strong, moderate, or weak fit.
+Explain whether you are a strong, moderate, or weak fit conceptually based on the data.
 """
 
     # === DEBUG: Check API key ===
@@ -56,12 +82,6 @@ Reference your {score:.1f}% match score. Explain whether you are a strong, moder
     endpoint = 'https://api.openai.com/v1/chat/completions'
     print(f"[DEBUG] Target endpoint: {endpoint}")
 
-    # === DEBUG: Check if OPENAI_API_BASE or similar overrides exist ===
-    for env_var in ['OPENAI_API_BASE', 'OPENAI_BASE_URL', 'OLLAMA_HOST', 'OLLAMA_API_BASE']:
-        val = os.environ.get(env_var)
-        if val:
-            print(f"[DEBUG] WARNING: {env_var} is set to: {val}")
-
     data = json.dumps({
         "model": "gpt-4o-mini",
         "messages": [
@@ -76,7 +96,7 @@ Reference your {score:.1f}% match score. Explain whether you are a strong, moder
             {"role": "user", "content": prompt}
         ],
         "temperature": 0.4,
-        "max_tokens": 220
+        "max_tokens": 800
     }).encode('utf-8')
 
     print(f"[DEBUG] Request payload size: {len(data)} bytes")
@@ -94,28 +114,11 @@ Reference your {score:.1f}% match score. Explain whether you are a strong, moder
     try:
         print(f"[DEBUG] Sending request to {endpoint}...")
         with urllib.request.urlopen(req, timeout=15) as response:
-            # === DEBUG: Check actual response details ===
-            print(f"[DEBUG] Response status: {response.status}")
-            print(f"[DEBUG] Response URL (after redirects): {response.url}")
-            print(f"[DEBUG] Response headers:")
-            for header in ['server', 'x-request-id', 'openai-organization', 'openai-model']:
-                val = response.getheader(header)
-                if val:
-                    print(f"[DEBUG]   {header}: {val}")
-
             raw = response.read().decode('utf-8')
             result = json.loads(raw)
 
-            # === DEBUG: Check what model actually responded ===
-            model_used = result.get('model', 'UNKNOWN')
-            usage = result.get('usage', {})
-            print(f"[DEBUG] Model that responded: {model_used}")
-            print(f"[DEBUG] Token usage: {usage}")
-            print(f"[DEBUG] Response ID: {result.get('id', 'UNKNOWN')}")
-
             summary = result['choices'][0]['message']['content'].strip()
             print(f"[DEBUG] Summary length: {len(summary)} chars")
-            print(f"[DEBUG] Summary preview: {summary[:100]}...")
 
             import re
             cleaned_matched_match = re.search(r'Clean_Matched_Skills:\s*([\s\S]*?)(?=Clean_Missing_Skills:)', summary)

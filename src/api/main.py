@@ -18,8 +18,9 @@ from preprocessing.text_cleaning import TextCleaner
 from preprocessing.document_parser import DocumentParser
 from embeddings.embedder import TextEmbedder
 from vector_store.faiss_index import FAISSJobIndex
-from matching.matcher import CVJobMatcher
-from matching.llm_summary import enrich_matches_with_llm
+from matching.matcher import CVJobMatcher          # v1 — kept for reference
+from matching.matcher_v2 import CVJobMatcherV2     # v2 — 5-signal hybrid (active)
+from matching.llm_summary_v2 import enrich_matches_with_llm
 
 app = FastAPI(
     title="Smart CV Job Matching API",
@@ -91,11 +92,11 @@ async def startup_event():
         embedding_dim=embedder.embedding_dim
     )
     
-    # Create matcher
-    matcher = CVJobMatcher(cleaner, embedder, faiss_index)
+    # Create matcher — V2 (5-signal hybrid: semantic + skills + domain + education + seniority)
+    matcher = CVJobMatcherV2(cleaner, embedder, faiss_index)
     
-    print("✓ Matching system initialized")
-    print(f"✓ Jobs in index: {matcher.index.index.ntotal}")
+    print("- Matching system initialized")
+    print(f"- Jobs in index: {matcher.index.index.ntotal}")
 
 @app.get("/")
 async def root():
@@ -314,9 +315,9 @@ async def compare_dynamic_upload(
         # 3. Create isolated FAISS index
         temp_index = FAISSJobIndex(embedding_dim=matcher.embedder.embedding_dim)
         temp_index.add_jobs(job_embeddings=job_embeddings, job_ids=valid_job_ids, job_texts=cleaned_texts)
-        
-        # 4. Create isolated Matcher
-        temp_matcher = CVJobMatcher(matcher.cleaner, matcher.embedder, temp_index)
+
+        # 4. Create isolated Matcher — V2 with full 5-signal scoring
+        temp_matcher = CVJobMatcherV2(matcher.cleaner, matcher.embedder, temp_index)
         
         # 5. Evaluate CV
         result = temp_matcher.match_cv_to_jobs(
