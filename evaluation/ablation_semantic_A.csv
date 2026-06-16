@@ -1,0 +1,28 @@
+version,domain,cv_name,jd_id,score,system_cat,human_label,correct,skills_pct,skills_pts
+A_Lexical,Data Analysis,Data_Analyst,JD1_Entry,66.38,Moderate,Strong,NO,50.0,10.0
+A_Lexical,Data Analysis,Data_Analyst,JD2_Mid,43.93,Moderate,Moderate,YES,27.59,5.52
+A_Lexical,Data Analysis,Data_Analyst,JD3_Senior,31.01,Weak,Weak,YES,20.0,4.0
+A_Lexical,Marketing,Andi_Shehu,JD1_Entry,71.96,Strong,Moderate,NO,23.53,4.71
+A_Lexical,Marketing,Andi_Shehu,JD3_FMCG,71.38,Strong,Moderate,NO,41.67,8.33
+A_Lexical,Marketing,Andi_Shehu,JD2_Mid,57.71,Moderate,Strong,NO,39.29,7.86
+A_Lexical,Medicine,Maria_Kola,JD2_Entry,63.37,Moderate,Strong,NO,50.0,10.0
+A_Lexical,Medicine,Maria_Kola,JD1_Mid,53.94,Moderate,Moderate,YES,16.0,3.2
+A_Lexical,Medicine,Maria_Kola,JD3_Senior,44.18,Moderate,Weak,NO,22.73,4.55
+A_Lexical,Human Resources,Erisa,JD1_Entry,70.19,Strong,Strong,YES,30.77,6.15
+A_Lexical,Human Resources,Erisa,JD2_Mid,64.93,Moderate,Weak,NO,44.44,8.89
+A_Lexical,Human Resources,Erisa,JD3_Senior,34.98,Weak,Weak,YES,5.26,1.05
+A_Lexical,Human Resources,Klajdi,JD1_Entry,63.34,Moderate,Strong,NO,7.69,1.54
+A_Lexical,Human Resources,Klajdi,JD2_Mid,56.75,Moderate,Weak,NO,11.11,2.22
+A_Lexical,Human Resources,Klajdi,JD3_Senior,33.41,Weak,Weak,YES,5.26,1.05
+A_Lexical,Finance,Besa,JD1_Entry,67.04,Moderate,Strong,NO,21.05,4.21
+A_Lexical,Finance,Besa,JD3_Mid,33.97,Weak,Moderate,NO,5.0,1.0
+A_Lexical,Finance,Besa,JD2_Senior,27.38,Weak,Weak,YES,7.14,1.43
+A_Lexical,Finance,Endri,JD1_Entry,64.73,Moderate,Strong,NO,15.79,3.16
+A_Lexical,Finance,Endri,JD3_Mid,37.67,Weak,Weak,YES,12.5,2.5
+A_Lexical,Finance,Endri,JD2_Senior,29.36,Weak,Weak,YES,7.14,1.43
+A_Lexical,Software Engineering,Ardit,JD2_Mid,65.14,Moderate,Moderate,YES,45.95,9.19
+A_Lexical,Software Engineering,Ardit,JD1_Senior,46.07,Moderate,Weak,NO,25.0,5.0
+A_Lexical,Software Engineering,Ardit,JD3_GoSenior,26.89,Weak,Weak,YES,2.5,0.5
+A_Lexical,Software Engineering,Klea,JD2_Mid,57.85,Moderate,Moderate,YES,29.73,5.95
+A_Lexical,Software Engineering,Klea,JD1_Senior,45.82,Moderate,Weak,NO,27.5,5.5
+A_Lexical,Software Engineering,Klea,JD3_GoSenior,27.79,Weak,Weak,YES,2.5,0.5

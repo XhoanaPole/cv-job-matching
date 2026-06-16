@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatchAI - CV Intelligence Dashboard</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles_v9.css">
+</head>
+
+<body>
+    <!-- SVG Defs -->
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+        <defs>
+            <linearGradient id="gradientStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="var(--secondary)" />
+                <stop offset="100%" stop-color="var(--accent)" />
+            </linearGradient>
+            <linearGradient id="grad-strong" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#10b981" />
+                <stop offset="100%" stop-color="#34d399" />
+            </linearGradient>
+            <linearGradient id="grad-moderate" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#d97706" />
+                <stop offset="100%" stop-color="#fbbf24" />
+            </linearGradient>
+            <linearGradient id="grad-weak" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#dc2626" />
+                <stop offset="100%" stop-color="#f87171" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="app-layout">
+
+        <!-- ═══ UNIFIED TOP NAVIGATION BAR ═══ -->
+        <header class="app-topbar glass-panel" id="app-topbar">
+
+            <!-- Left: Brand + Nav (switches between landing/app links) -->
+            <div class="app-topbar-left">
+                <a href="#" class="app-brand" id="brand-home-link">
+                    <i class="fa-solid fa-layer-group brand-icon"></i>
+                    <span class="brand-text">Match<span class="highlight">AI</span></span>
+                </a>
+
+                <!-- Landing Nav (shown by default) -->
+                <nav class="app-nav-links" id="nav-landing-links">
+                    <a href="#" class="app-nav-item active" data-scroll="landing-hero">Home</a>
+                    <a href="#" class="app-nav-item" data-scroll="landing-how">How It Works</a>
+                    <a href="#" class="app-nav-item" data-scroll="landing-about">About</a>
+                </nav>
+
+                <!-- App Nav (hidden by default) -->
+                <nav class="app-nav-links hidden" id="nav-app-links">
+                    <a href="#" class="app-nav-item" id="nav-home-btn">Home</a>
+                    <a href="#" class="app-nav-item active" data-target="view-dashboard">Dashboard</a>
+                    <a href="#" class="app-nav-item" data-target="view-analytics">Analytics</a>
+                    <a href="#" class="app-nav-item" data-target="view-resumes">My Resumes</a>
+                    <a href="#" class="app-nav-item" data-target="view-history">History</a>
+                    <a href="#" class="app-nav-item" data-target="view-settings">Settings</a>
+                </nav>
+            </div>
+
+            <!-- Right: CTA (switches between landing/app actions) -->
+            <div class="app-topbar-right">
+
+                <!-- Landing Actions (shown by default) -->
+                <div id="topbar-landing-actions" class="topbar-action-group">
+                    <a href="#" class="app-nav-item" data-scroll="landing-how">Learn more</a>
+                    <button class="primary-btn" id="topbar-try-btn"
+                        style="padding: 10px 24px; border-radius: 50px; font-size: 0.95rem;">Try it out &rarr;</button>
+                </div>
+
+                <!-- App Actions (hidden by default) -->
+                <div id="topbar-app-actions" class="topbar-action-group hidden">
+                    <div class="search-bar glass-input" style="position: relative;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="run-search-input" placeholder="Search saved runs..." autocomplete="off">
+                        <div id="search-dropdown" class="glass-panel hidden"
+                            style="position: absolute; top: 110%; right: 0; left: auto; width: 320px; max-height: 300px; overflow-y: auto; border-radius: 12px; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; padding: 5px;">
+                        </div>
+                    </div>
+                    <button class="icon-btn" id="bell-btn" style="position:relative;">
+                        <i class="fa-regular fa-bell" id="bell-icon"></i>
+                        <span class="notification-dot hidden" id="notif-dot"></span>
+                        <!-- Notification dropdown -->
+                        <div id="notif-dropdown" class="glass-panel hidden"
+                            style="position:absolute; top:calc(100% + 10px); right:0; width:320px; border-radius:16px; padding:0; z-index:300; box-shadow:0 12px 40px rgba(0,0,0,0.45); overflow:hidden; text-align:left;">
+                            <div style="padding:12px 16px 10px; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:0.88rem; font-weight:700; color:var(--text-primary);">Notifications</span>
+                                <span id="notif-clear-btn" style="color:var(--text-secondary); font-size:0.78rem; cursor:pointer; padding:2px 6px; border-radius:6px; transition:background 0.2s; user-select:none;">Clear all</span>
+                            </div>
+                            <div id="notif-list" style="max-height:340px; overflow-y:auto;"></div>
+                            <div id="notif-empty" style="padding:32px 16px; text-align:center; color:var(--text-secondary); font-size:0.85rem; opacity:0.55; display:none;">
+                                <i class="fa-regular fa-bell-slash" style="display:block; font-size:1.5rem; margin-bottom:8px; opacity:0.4;"></i>
+                                No notifications yet
+                            </div>
+                        </div>
+                    </button>
+                    <div class="topbar-user-profile">
+                        <div class="avatar">XP</div>
+                        <div class="user-info">
+                            <h4>Xhoana Pole</h4>
+                            <p>Student Plan</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </header>
+
+        <!-- ═══ MAIN CONTENT AREA ═══ -->
+        <main class="app-main">
+            <div class="content-scroll landing-mode" id="main-scroll">
+
+                <!-- ─── VIEW: Landing ─── -->
+                <div id="view-landing" class="page-view active-view landing-view">
+
+                    <!-- Hero -->
+                    <section class="hero" id="landing-hero">
+                        <div class="hero-glow-bl"></div>
+                        <div class="hero-glow-tr"></div>
+                        <div class="hero-container">
+                            <div class="hero-left">
+                                <h1 class="hero-title">Know if you're ready before you apply.</h1>
+                                <p class="hero-subtitle">Upload your CV, match it against real jobs, and get an
+                                    AI-powered gap analysis in seconds.</p>
+                                <div class="hero-actions">
+                                    <button class="primary-btn hero-try-btn"
+                                        style="padding: 14px 32px; font-size: 1.05rem; border-radius: 50px;">Try it out
+                                        &rarr;</button>
+                                    <a href="#" class="btn-ghost" data-scroll="landing-how">Learn more</a>
+                                </div>
+                            </div>
+                            <div class="hero-right">
+                                <div class="card-glow"></div>
+                                <div class="mockup-card">
+                                    <div class="mock-row-1">
+                                        <span class="mock-job-title">Junior Doctor &middot; American Hospital</span>
+                                        <span class="mock-badge">60% match</span>
+                                    </div>
+                                    <div class="mock-row-2">
+                                        <div class="mock-ring-container">
+                                            <svg class="mock-ring" viewBox="0 0 36 36">
+                                                <path class="mock-ring-bg"
+                                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                                <path class="mock-ring-fill"
+                                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                            </svg>
+                                            <div class="mock-ring-text">60%</div>
+                                        </div>
+                                        <div class="mock-stats">
+                                            <div class="mock-stat-box green"><i class="fa-solid fa-check"></i> 11/16
+                                                skills matched</div>
+                                            <div class="mock-stat-box amber"><i class="fa-solid fa-xmark"></i> 5/16 to
+                                                develop</div>
+                                        </div>
+                                    </div>
+                                    <span class="mock-row-label">You have:</span>
+                                    <div class="mock-chips">
+                                        <span class="chip green">Patient Care</span>
+                                        <span class="chip green">BLS</span>
+                                        <span class="chip green">ACLS</span>
+                                        <span class="chip green">EHR</span>
+                                    </div>
+                                    <span class="mock-row-label">Missing:</span>
+                                    <div class="mock-chips">
+                                        <span class="chip amber">ECG Interpretation</span>
+                                        <span class="chip amber">Medical License</span>
+                                    </div>
+                                    <div class="mock-footer-text">"You have a solid foundation &mdash; here's what to
+                                        build next."</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- How It Works -->
+                    <section class="section how-it-works" id="landing-how">
+                        <div class="section-header">
+                            <h2 class="section-title">How MatchAI works</h2>
+                            <p class="section-subtitle">Three steps to knowing exactly where you stand</p>
+                        </div>
+                        <div class="steps-grid">
+                            <div class="step-card">
+                                <div class="step-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
+                                <h3 class="step-title">Upload your CV</h3>
+                                <p class="step-text">Drop your CV in PDF, DOCX, or TXT format. Our system extracts your
+                                    skills, experience, and qualifications instantly.</p>
+                            </div>
+                            <div class="step-card">
+                                <div class="step-icon"><i class="fa-solid fa-briefcase"></i></div>
+                                <h3 class="step-title">Add job descriptions</h3>
+                                <p class="step-text">Upload up to 5 job descriptions you're targeting. We compare each
+                                    one against your CV in parallel.</p>
+                            </div>
+                            <div class="step-card">
+                                <div class="step-icon"><i class="fa-solid fa-chart-bar"></i></div>
+                                <h3 class="step-title">Get your gap analysis</h3>
+                                <p class="step-text">Receive an AI-powered breakdown of your match score, matched
+                                    skills, missing skills, and personalised next steps.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- About -->
+                    <section class="section about-section" id="landing-about">
+                        <div class="about-container">
+                            <div class="about-left">
+                                <h2 class="about-title">Built for students, by students</h2>
+                                <p class="about-text">MatchAI was built as a diploma thesis project with one goal: give
+                                    students the clarity they need before applying to jobs. No more guessing whether
+                                    your CV is good enough. Get an honest, AI-powered assessment in seconds.</p>
+                                <div class="stat-row">
+                                    <div class="stat-item">
+                                        <span class="stat-number">5 jobs</span>
+                                        <span class="stat-label">scanned at once</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-number">1 CV</span>
+                                        <span class="stat-label">is all you need</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-number">Instant</span>
+                                        <span class="stat-label">AI gap analysis</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="about-right">
+                                <div class="quote-card">
+                                    <p class="quote-text">"Most students score between 30–55% on their first scan.
+                                        That's not failure, that's your starting point."</p>
+                                    <span class="quote-author">&mdash; MatchAI</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Footer -->
+                    <footer class="lp-footer">
+                        <div class="footer-left">MatchAI &copy; 2026 &mdash; Diploma Thesis Project</div>
+                        <a href="#" class="footer-link hero-try-btn">Try it out &rarr;</a>
+                    </footer>
+
+                </div>
+                <!-- ─── END view-landing ─── -->
+
+                <!-- ─── VIEW: Dashboard ─── -->
+                <div id="view-dashboard" class="page-view hidden">
+
+
+
+                    <!-- Upload Workflow -->
+                    <section id="upload-section">
+                        <div class="upload-workflow-header">
+                            <h2>Find the Perfect Job</h2>
+                            <p>Upload your CV and compare it against target roles to see your gap analysis instantly.
+                            </p>
+                        </div>
+
+                        <!-- Input Mode Toggle -->
+                        <div style="display: flex; justify-content: center; margin-bottom: 24px;">
+                            <div style="display: flex; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; padding: 4px; gap: 4px;">
+                                <button id="mode-file-btn" style="padding: 9px 26px; border-radius: 50px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; font-family: inherit; background: var(--primary); color: white; transition: all 0.2s;">
+                                    <i class="fa-solid fa-upload"></i> Upload Files
+                                </button>
+                                <button id="mode-text-btn" style="padding: 9px 26px; border-radius: 50px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; font-family: inherit; background: transparent; color: var(--text-secondary); transition: all 0.2s;">
+                                    <i class="fa-solid fa-keyboard"></i> Paste Text
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Paste Text Mode (hidden by default) -->
+                        <div id="paste-mode-section" class="hidden">
+                            <div class="split-upload">
+                                <!-- CV File Upload (always a file, even in paste mode) -->
+                                <div class="upload-card glass-panel">
+                                    <div class="card-header">
+                                        <div class="step-badge">1</div>
+                                        <h3>Source Document</h3>
+                                    </div>
+                                    <p class="card-subtitle">Upload your primary Curriculum Vitae.</p>
+                                    <div class="upload-area" id="cv-drop-zone-paste">
+                                        <i class="fa-solid fa-file-pdf upload-icon primary-gradient"></i>
+                                        <h4>Drag & Drop CV</h4>
+                                        <p>Supports .pdf, .docx, .txt</p>
+                                        <input type="file" id="cv-file-input-paste" accept=".txt,.pdf,.docx" hidden>
+                                        <button class="secondary-btn btn-sm mt-3" id="cv-browse-btn-paste">Browse Files</button>
+                                    </div>
+                                    <div id="cv-file-list-paste" class="file-list-container mt-3"></div>
+                                </div>
+                                <!-- JD Textareas -->
+                                <div class="upload-card glass-panel">
+                                    <div class="card-header">
+                                        <div class="step-badge">2</div>
+                                        <h3>Job Descriptions</h3>
+                                    </div>
+                                    <p class="card-subtitle">Paste up to 5 job descriptions. Give each a short label.</p>
+                                    <div id="job-text-items" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                                    <button class="secondary-btn btn-sm" id="add-job-text-btn" style="margin-top: 12px;">
+                                        <i class="fa-solid fa-plus"></i> Add Another Job
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- File Upload Mode -->
+                        <div id="file-mode-section">
+                        <div class="split-upload">
+                            <!-- Left: CV Upload -->
+                            <div class="upload-card glass-panel">
+                                <div class="card-header">
+                                    <div class="step-badge">1</div>
+                                    <h3>Source Document</h3>
+                                </div>
+                                <p class="card-subtitle">Upload your primary Curriculum Vitae.</p>
+
+                                <div class="upload-area" id="cv-drop-zone">
+                                    <i class="fa-solid fa-file-pdf upload-icon primary-gradient"></i>
+                                    <h4>Drag & Drop CV</h4>
+                                    <p>Supports .pdf, .docx, .txt</p>
+                                    <input type="file" id="cv-file-input" accept=".txt,.pdf,.docx" hidden>
+                                    <button class="secondary-btn btn-sm mt-3" id="cv-browse-btn">Browse Files</button>
+                                </div>
+
+                                <div id="cv-file-list" class="file-list-container mt-3"></div>
+                            </div>
+
+                            <!-- Right: Jobs Upload -->
+                            <div class="upload-card glass-panel">
+                                <div class="card-header">
+                                    <div class="step-badge">2</div>
+                                    <h3>Target Domains</h3>
+                                </div>
+                                <p class="card-subtitle">Upload up to 5 individual job descriptions.</p>
+
+                                <div class="upload-area" id="job-drop-zone">
+                                    <i class="fa-solid fa-briefcase upload-icon secondary-gradient"></i>
+                                    <h4>Drag & Drop Jobs</h4>
+                                    <p>Supports .pdf, .docx, .txt</p>
+                                    <input type="file" id="job-file-input" accept=".txt,.pdf,.docx" multiple hidden>
+                                    <button class="secondary-btn btn-sm mt-3" id="job-browse-btn">Browse Files</button>
+                                </div>
+
+                                <div id="job-file-list" class="file-list-container mt-3"></div>
+                            </div>
+                        </div>
+                        </div><!-- /file-mode-section -->
+
+                        <div class="action-bar-hero">
+                            <button class="primary-btn pulse-glow" id="compare-btn" disabled>
+                                <i class="fa-solid fa-bolt"></i> Finding your best match
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Premium Loader -->
+                    <section id="loading-section" class="hidden">
+                        <div class="loader-container">
+                            <div class="data-rings">
+                                <div class="ring r1"></div>
+                                <div class="ring r2"></div>
+                                <div class="ring r3"></div>
+                            </div>
+                            <h2 class="pulse-text mt-4">Analyzing Your Profile...</h2>
+                            <p class="loader-subtext">Our AI is reading your CV and matching your unique skills to the
+                                best opportunities.</p>
+                        </div>
+                    </section>
+
+                    <!-- Results -->
+                    <section id="results-section" class="hidden">
+                        <div class="results-header">
+                            <div>
+                                <h2 class="gradient-text">Analysis Complete</h2>
+                                <p class="text-secondary">Sorted by the best match for your unique profile.</p>
+                            </div>
+                            <button class="secondary-btn" id="upload-another-btn">
+                                <i class="fa-solid fa-rotate-left"></i> Run Another
+                            </button>
+                        </div>
+
+                        <div id="matches-container" class="matches-grid">
+                            <!-- Custom JS Match Cards Inserted Here -->
+                        </div>
+                    </section>
+                </div> <!-- /view-dashboard -->
+
+                <!-- VIEW: Match Details (AI Explanation) -->
+                <div id="view-match-details" class="page-view hidden">
+                    <div class="results-header" style="border-bottom:none; padding-bottom:10px;">
+                        <div style="width: 100%;">
+                            <button class="secondary-btn btn-sm" id="back-to-results-btn" style="margin-bottom: 20px;">
+                                <i class="fa-solid fa-arrow-left"></i> Back to Results
+                            </button>
+
+                            <div
+                                style="display: flex; flex-direction: column; gap: 35px; align-items: flex-start; margin-top: 10px;">
+                                <div style="display: flex; flex-direction: column; gap: 5px;">
+                                    <h2 class="gradient-text" id="details-job-title" style="margin:0; font-size: 3rem;">
+                                        Job Title</h2>
+                                    <p class="text-secondary"
+                                        style="font-size: 1.2rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 500;">
+                                        AI Gap Analysis Assessment</p>
+                                </div>
+
+                                <!-- 3-Panel Stat Cards -->
+                                <div class="details-stat-grid">
+                                    <!-- Score Card -->
+                                    <div class="details-stat-card details-stat-score">
+                                        <div class="details-stat-card__label">Match Score</div>
+                                        <div class="details-stat-card__ring-wrap">
+                                            <div class="progress-ring-container">
+                                                <svg class="progress-ring" width="110" height="110"
+                                                    viewBox="0 0 100 100">
+                                                    <circle class="progress-ring__bg" stroke-width="7"
+                                                        fill="transparent" r="42" cx="50" cy="50" />
+                                                    <circle id="details-progress-circle" class="progress-ring__circle"
+                                                        stroke-width="7" stroke-dasharray="263.89"
+                                                        stroke-dashoffset="263.89" stroke-linecap="round"
+                                                        fill="transparent" r="42" cx="50" cy="50" />
+                                                </svg>
+                                                <div class="progress-ring__score"><span
+                                                        id="details-score-value">0</span><small>%</small></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Matched Card -->
+                                    <div class="details-stat-card details-stat-matched" id="details-matched-toggle">
+                                        <div class="details-stat-card__label">Matched Skills</div>
+                                        <div class="details-stat-card__icon"><i class="fa-solid fa-check-circle"></i>
+                                        </div>
+                                        <div class="details-stat-card__count" id="details-matched-count">0 / 0</div>
+                                        <div class="details-stat-card__sub">skills found in your CV</div>
+                                        <i class="fa-solid fa-chevron-down details-stat-card__chevron toggle-icon"></i>
+                                    </div>
+
+                                    <!-- Missing Card -->
+                                    <div class="details-stat-card details-stat-missing" id="details-missing-toggle">
+                                        <div class="details-stat-card__label">Missing Skills</div>
+                                        <div class="details-stat-card__icon"><i class="fa-solid fa-circle-xmark"></i>
+                                        </div>
+                                        <div class="details-stat-card__count" id="details-missing-count">0 / 0</div>
+                                        <div class="details-stat-card__sub">skills to develop</div>
+                                        <i class="fa-solid fa-chevron-down details-stat-card__chevron toggle-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inline Skill Lists (Hidden by Default) -->
+                    <div id="details-inline-skills-view" class="hidden"
+                        style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 15px; margin-bottom: 20px; transition: all 0.3s ease;">
+                        <div id="details-matched-list" class="hidden">
+                            <h4 style="color: var(--success); margin: 0 0 10px 0; font-size: 0.95rem;">Matched Skills
+                            </h4>
+                            <div id="details-matched-tags" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                        </div>
+                        <div id="details-missing-list" class="hidden">
+                            <h4 style="color: var(--warning); margin: 0 0 10px 0; font-size: 0.95rem;">Missing Skills
+                            </h4>
+                            <div id="details-missing-tags" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Matrix removed entirely as requested; relying on text summary now -->
+
+                    <!-- Overall Analysis -->
+                    <div class="upload-card glass-panel"
+                        style="padding: 28px 30px; border-left: 4px solid var(--primary-light);">
+                        <h3 style="font-size: 1.2rem; font-weight: 700; margin: 0 0 14px 0;">Overall Analysis</h3>
+                        <div id="details-ai-overall"
+                            style="font-size: 1.05rem; line-height: 1.7; color: var(--text-primary);"></div>
+                    </div>
+
+                    <!-- AI Grid — Strengths, Gaps, Next Steps -->
+                    <div class="ai-dashboard-grid"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+
+                        <!-- Strengths -->
+                        <div class="upload-card glass-panel"
+                            style="padding: 25px; border-top: 3px solid var(--success);">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <h3 style="font-size: 1.2rem; font-weight: 700; margin:0;">Strengths</h3>
+                            </div>
+                            <div id="details-ai-strengths"
+                                style="font-size: 1rem; line-height: 1.7; color: var(--text-secondary);"></div>
+                        </div>
+
+                        <!-- Gaps -->
+                        <div class="upload-card glass-panel"
+                            style="padding: 25px; border-top: 3px solid var(--warning);">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <h3 style="font-size: 1.2rem; font-weight: 700; margin:0;">Gaps</h3>
+                            </div>
+                            <div id="details-ai-gaps"
+                                style="font-size: 1rem; line-height: 1.7; color: var(--text-secondary);"></div>
+                        </div>
+
+                        <!-- Your next steps -->
+                        <div class="upload-card glass-panel"
+                            style="grid-column: 1 / -1; padding: 25px; border-top: 3px solid var(--accent);">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <h3 style="font-size: 1.2rem; font-weight: 700; margin:0;">Your next steps</h3>
+                            </div>
+                            <div id="details-ai-advice"
+                                style="font-size: 1rem; line-height: 1.7; color: var(--text-secondary);"></div>
+                        </div>
+                    </div>
+
+                    <!-- Career Roadmap (populated after debate) -->
+                    <div id="roadmap-section" style="display: none; margin-top: 10px;">
+                        <div class="upload-card glass-panel" style="padding: 25px; border-top: 3px solid var(--primary);">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                                <i class="fa-solid fa-route" style="color: var(--primary-light); font-size: 1.2rem;"></i>
+                                <h3 style="font-size: 1.2rem; font-weight: 700; margin: 0;">Your Career Roadmap</h3>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0 0 20px 0;">A personalised step-by-step plan to reach this role.</p>
+                            <div id="roadmap-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disclaimer -->
+                    <div
+                        style="margin-top: 20px; padding: 16px 20px; border-radius: 12px; background: rgba(6,182,212,0.05); border: 1px solid rgba(6,182,212,0.15); display: flex; gap: 12px; align-items: flex-start;">
+                        <i class="fa-solid fa-circle-info"
+                            style="color: var(--accent); margin-top: 3px; flex-shrink: 0;"></i>
+                        <p style="margin: 0; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+                            <strong style="color: var(--text-primary);">Heads up</strong> &mdash; This analysis is
+                            AI-generated and designed as a learning tool for students. Treat it as a helpful starting
+                            point for your career development, not as a final verdict on your qualifications. Always
+                            seek guidance from career advisors or professionals in your field.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- VIEW: Analytics -->
+                <div id="view-analytics" class="page-view hidden">
+                    <div class="an-header">
+                        <div>
+                            <h2 class="gradient-text">Analytics</h2>
+                            <p class="text-secondary">Your session at a glance</p>
+                        </div>
+                        <button class="secondary-btn btn-sm" id="clear-history-btn" style="border-radius:12px;">
+                            <i class="fa-solid fa-trash-can"></i> Clear
+                        </button>
+                    </div>
+
+                    <!-- EMPTY STATE -->
+                    <div id="analytics-no-data" class="an-empty glass-panel">
+                        <div class="an-empty__pulse">
+                            <i class="fa-solid fa-chart-area"></i>
+                        </div>
+                        <h3>No scans yet</h3>
+                        <p>Upload your CV and a job description to get started.</p>
+                        <button class="primary-btn btn-sm mt-3" id="an-back-to-dash"
+                            style="padding: 10px 24px; font-size: 1rem; border-radius: 99px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; cursor: pointer;">Go
+                            to Dashboard</button>
+                    </div>
+
+                    <!-- DATA STATE -->
+                    <div id="analytics-has-data" class="hidden">
+
+                        <!-- Domain Filter Bar -->
+                        <div id="an-domain-filter" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; align-items:center; min-height:40px;"></div>
+
+                        <!-- Best Match Banner -->
+                        <div id="an-best-match" style="display:none; margin-bottom:20px; padding:20px 24px; border-radius:16px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.08); border-left:4px solid var(--success);"></div>
+
+                        <!-- 1. Executive Metrics Row -->
+                        <div
+                            style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px;">
+                            <div class="upload-card glass-panel"
+                                style="padding: 20px; text-align: center; border-bottom: 3px solid var(--primary-light);">
+                                <div style="font-size: 2.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 5px;"
+                                    id="an-metric-total">0</div>
+                                <div
+                                    style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                                    Total Scans</div>
+                            </div>
+                            <div class="upload-card glass-panel"
+                                style="padding: 20px; text-align: center; border-bottom: 3px solid var(--success);">
+                                <div style="font-size: 2.5rem; font-weight: 800; color: var(--success); margin-bottom: 5px;"
+                                    id="an-metric-avg">0%</div>
+                                <div
+                                    style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                                    Avg Match Score</div>
+                            </div>
+                            <div class="upload-card glass-panel"
+                                style="padding: 20px; text-align: center; border-bottom: 3px solid var(--warning);">
+                                <div style="font-size: 1.4rem; font-weight: 700; color: var(--warning); margin-bottom: 5px; min-height: 45px; display: flex; align-items: center; justify-content: center; line-height: 1.2;"
+                                    id="an-metric-gap">-</div>
+                                <div
+                                    style="color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                                    Primary Skill Gap</div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Charts & History Row -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <!-- Performance History -->
+                            <div class="upload-card glass-panel"
+                                style="padding: 25px; display: flex; flex-direction: column;">
+                                <h3
+                                    style="font-size: 1.2rem; font-weight: 700; margin-bottom: 5px; color: var(--text-primary);">
+                                    Performance History</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">Your
+                                    recent job matches and score progression</p>
+                                <div id="an-history-list"
+                                    style="display: flex; flex-direction: column; gap: 12px; max-height: 350px; overflow-y: auto; padding-right: 10px; flex-grow: 1;">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Distribution + Radar stacked -->
+                            <div style="display:flex; flex-direction:column; gap:20px;">
+                                <!-- Score Distribution -->
+                                <div class="upload-card glass-panel" style="padding:25px;">
+                                    <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:5px; color:var(--text-primary);">Score Distribution</h3>
+                                    <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:14px;">Strong / Moderate / Weak breakdown</p>
+                                    <div style="position:relative; height:160px;">
+                                        <canvas id="distributionChart"></canvas>
+                                    </div>
+                                </div>
+                                <!-- Skill Radar Chart -->
+                                <div class="upload-card glass-panel" style="padding:25px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                                    <div style="width:100%; text-align:left;">
+                                        <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:5px; color:var(--text-primary);">Skill Alignment Radar</h3>
+                                        <p style="color:var(--text-secondary); font-size:0.85rem; margin-bottom:10px;">Your core strengths vs. market demand</p>
+                                    </div>
+                                    <div id="skillRadarContainer" style="position:relative; width:100%; max-width:320px; aspect-ratio:1; flex-grow:1; display:flex; align-items:center; justify-content:center;">
+                                        <canvas id="skillRadarChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Skill Matrix Heat-Bars -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <!-- Strengths -->
+                            <div class="upload-card glass-panel" style="padding: 25px;">
+                                <h3
+                                    style="font-size: 1.2rem; font-weight: 700; margin-bottom: 5px; color: var(--text-primary);">
+                                    Core Competencies</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">Skills
+                                    you consistently bring to the table</p>
+                                <div id="an-matrix-strengths" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                            <!-- Gaps -->
+                            <div class="upload-card glass-panel" style="padding: 25px;">
+                                <h3
+                                    style="font-size: 1.2rem; font-weight: 700; margin-bottom: 5px; color: var(--text-primary);">
+                                    Skill Gaps to Close</h3>
+                                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+                                    High-priority skills missing across your targets</p>
+                                <div id="an-matrix-gaps" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- VIEW: Resumes -->
+                <div id="view-resumes" class="page-view hidden">
+                    <div class="results-header">
+                        <div>
+                            <h2 class="gradient-text">My Resumes</h2>
+                            <p class="text-secondary">CVs you've uploaded this session</p>
+                        </div>
+                    </div>
+
+                    <div id="resumes-empty"
+                        style="text-align:center; padding: 60px 20px; color: var(--text-secondary);">
+                        <i class="fa-solid fa-file-circle-plus"
+                            style="font-size: 3rem; opacity: 0.15; display:block; margin-bottom: 16px;"></i>
+                        <p style="font-size: 1rem; opacity: 0.5;">No CVs uploaded yet.<br>Upload a CV on the Dashboard
+                            to see it here.</p>
+                    </div>
+
+                    <div id="resumes-list" style="display: flex; flex-direction: column; gap: 14px;"></div>
+                </div>
+
+                <!-- VIEW: Settings / Theme Engine -->
+                <div id="view-settings" class="page-view hidden">
+                    <div class="results-header">
+                        <div>
+                            <h2 class="gradient-text">Application Preferences</h2>
+                            <p class="text-secondary">Customize your intelligent matching environment locally</p>
+                        </div>
+                    </div>
+
+                    <div class="upload-card glass-panel">
+                        <div class="card-header">
+                            <i class="fa-solid fa-palette text-success" style="font-size:24px; margin-right:10px;"></i>
+                            <h3 style="margin:0;">Dashboard Theme Engine</h3>
+                        </div>
+                        <p class="text-secondary mt-3">Select your algorithmic accent palette to instantly restyle the
+                            entire Application GUI.</p>
+
+                        <div class="theme-grid mt-4">
+                            <button class="theme-btn active" data-theme="ocean"
+                                style="background: linear-gradient(135deg, #3b82f6, #06b6d4)"
+                                title="Ocean Blue"></button>
+                            <button class="theme-btn" data-theme="emerald"
+                                style="background: linear-gradient(135deg, #10b981, #059669)"
+                                title="Emerald Matrix"></button>
+                            <button class="theme-btn" data-theme="rose"
+                                style="background: linear-gradient(135deg, #f43f5e, #db2777)"
+                                title="Cyber Rose"></button>
+                            <button class="theme-btn" data-theme="amber"
+                                style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+                                title="Solar Amber"></button>
+                            <button class="theme-btn" data-theme="amethyst"
+                                style="background: linear-gradient(135deg, #8b5cf6, #d946ef)"
+                                title="Neon Amethyst"></button>
+                        </div>
+                    </div>
+
+                    <div class="upload-card glass-panel mt-4">
+                        <div class="card-header">
+                            <i class="fa-solid fa-circle-half-stroke" style="font-size:24px; margin-right:10px; color: var(--accent);"></i>
+                            <h3 style="margin:0;">Appearance Mode</h3>
+                        </div>
+                        <p class="text-secondary mt-3">Switch between dark and light interface. Your preference is saved automatically.</p>
+                        <div style="display: flex; align-items: center; gap: 16px; margin-top: 20px;">
+                            <i class="fa-solid fa-moon" style="color: var(--text-secondary); font-size: 1rem;"></i>
+                            <span style="color: var(--text-secondary); font-weight: 500; font-size: 0.95rem;">Dark</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="light-mode-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span style="color: var(--text-secondary); font-weight: 500; font-size: 0.95rem;">Light</span>
+                            <i class="fa-solid fa-sun" style="color: var(--text-secondary); font-size: 1rem;"></i>
+                        </div>
+                    </div>
+
+                    <div class="upload-card glass-panel mt-4">
+                        <div class="card-header">
+                            <i class="fa-solid fa-shield-halved text-warning"
+                                style="font-size:24px; margin-right:10px;"></i>
+                            <h3 style="margin:0;">Authentication Module Placeholder</h3>
+                        </div>
+                        <p class="text-secondary mt-3">Future deployment module: PostgreSQL and OAuth2 integration will
+                            allow enterprise-wide persistent saving of job matches directly to a central cloud server
+                            rather than locally volatile RAM allocation.</p>
+                    </div>
+                </div>
+                <!-- /view-settings -->
+
+                <!-- Match Card Template -->
+                    <template id="match-card-template">
+                        <div class="match-card glass-panel"
+                            style="padding: 28px 32px; border-left: 4px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 18px; position: relative; overflow: hidden;">
+
+                            <!-- Header: job title + fit label | score badge -->
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+                                <div style="min-width:0;">
+                                    <h3 class="job-id"
+                                        style="font-size:1.15rem; font-weight:700; margin:0 0 5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-primary);">Job Title</h3>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <span class="fit-status-dot"
+                                            style="width:7px; height:7px; border-radius:50%; display:inline-block;"></span>
+                                        <span class="summary-fit-label"
+                                            style="font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-secondary);">moderate fit</span>
+                                    </div>
+                                </div>
+                                <span class="score-badge"
+                                    style="flex-shrink:0; background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.25); color:#fbbf24; border-radius:99px; padding:5px 14px; font-size:0.85rem; font-weight:700; white-space:nowrap;">
+                                    <span class="score-value">0</span>% match
+                                </span>
+                            </div>
+
+                            <!-- Score arc + skill counts -->
+                            <div style="display:flex; align-items:center; gap:20px;">
+                                <!-- Horseshoe gauge -->
+                                <div style="position:relative; width:110px; height:72px; flex-shrink:0;">
+                                    <svg width="110" height="72" viewBox="0 0 110 72">
+                                        <path d="M 8,68 A 47,47 0 0,1 102,68"
+                                            stroke="rgba(255,255,255,0.07)" stroke-width="9"
+                                            fill="none" stroke-linecap="round"/>
+                                        <path class="progress-ring__circle"
+                                            d="M 8,68 A 47,47 0 0,1 102,68"
+                                            stroke-linecap="round" fill="none" stroke-width="9"
+                                            stroke-dasharray="147.65" stroke-dashoffset="147.65"
+                                            style="transition: stroke-dashoffset 1s ease-out;"/>
+                                    </svg>
+                                    <div style="position:absolute; bottom:2px; left:50%; transform:translateX(-50%); display:flex; align-items:baseline; gap:1px; white-space:nowrap;">
+                                        <span class="score-value"
+                                            style="font-size:1.55rem; font-weight:800; color:var(--text-primary); line-height:1;">0</span>
+                                        <span style="font-size:0.72rem; color:var(--text-secondary);">%</span>
+                                    </div>
+                                </div>
+                                <!-- Counts -->
+                                <div style="display:flex; flex-direction:column; gap:10px;">
+                                    <div class="skill-matched-count"
+                                        style="display:flex; align-items:center; gap:8px; font-size:1rem; font-weight:700; color:#34d399;">
+                                        <i class="fa-solid fa-circle-check" style="font-size:0.85rem;"></i>
+                                        <span>0/0 skills matched</span>
+                                    </div>
+                                    <div class="skill-gap-count"
+                                        style="display:flex; align-items:center; gap:8px; font-size:1rem; font-weight:700; color:var(--accent);">
+                                        <i class="fa-solid fa-circle-xmark" style="font-size:0.85rem;"></i>
+                                        <span>0/0 to develop</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Skills chips -->
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <div>
+                                    <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 7px; font-weight:500;">You have:</p>
+                                    <div class="matched-chips-container" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+                                </div>
+                                <div>
+                                    <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 7px; font-weight:500;">Missing:</p>
+                                    <div class="missing-chips-container" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Footer: quote + action -->
+                            <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:16px; padding-top:14px; border-top:1px solid var(--border-light);">
+                                <div class="card-teaser-text"
+                                    style="font-size:0.88rem; color:var(--text-secondary); line-height:1.6; font-style:italic; flex:1; min-width:0;"></div>
+                                <button class="run-debate-btn"
+                                    style="flex-shrink:0; padding:10px 18px; border-radius:10px; font-weight:700; font-size:0.85rem; background:linear-gradient(135deg, var(--secondary), var(--accent)); border:none; color:white; cursor:pointer; white-space:nowrap; transition: opacity 0.2s ease;">
+                                    View Details <i class="fa-solid fa-arrow-right" style="font-size:0.78rem; margin-left:4px;"></i>
+                                </button>
+                            </div>
+
+                        </div>
+                    </template>
+
+
+                <!-- ─── VIEW: History ─── -->
+                <div id="view-history" class="page-view hidden">
+                    <div class="results-header">
+                        <div>
+                            <h2 class="gradient-text">Run History</h2>
+                            <p class="text-secondary">All your past CV matches, most recent first</p>
+                        </div>
+                        <button class="secondary-btn btn-sm" id="clear-history-btn">
+                            <i class="fa-solid fa-trash"></i> Clear All
+                        </button>
+                    </div>
+
+                    <div id="history-empty" style="text-align:center; padding: 60px 20px; color: var(--text-secondary);">
+                        <i class="fa-solid fa-clock-rotate-left" style="font-size: 3rem; opacity: 0.15; display:block; margin-bottom: 16px;"></i>
+                        <p style="font-size: 1rem; opacity: 0.5;">No runs yet.<br>Run a match on the Dashboard to see your history here.</p>
+                    </div>
+
+                    <div id="history-list" style="display: flex; flex-direction: column; gap: 14px;"></div>
+                </div>
+
+                    <script src="app_v9.js"></script>
+</body>
+
+</html>

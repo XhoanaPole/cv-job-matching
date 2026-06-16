@@ -1,7 +1,24 @@
 import os
+import re
 import urllib.request
 import json
 import concurrent.futures
+
+
+def _is_skill_in_cv(skill: str, cv_text: str) -> bool:
+    """Case/format-insensitive check for whether `skill` is literally present in the CV text.
+    Used to catch cases where the LLM flags a skill as missing despite it being
+    explicitly listed (e.g. 'Power BI' vs 'PowerBI')."""
+    skill_lower = skill.lower().strip()
+    cv_lower = cv_text.lower()
+    if skill_lower in cv_lower:
+        return True
+    skill_norm = re.sub(r'[\s\-_/]', '', skill_lower)
+    if len(skill_norm) >= 4:
+        cv_norm = re.sub(r'[\s\-_/]', '', cv_lower)
+        if skill_norm in cv_norm:
+            return True
+    return False
 
 
 def generate_single_summary(match_info):
@@ -9,98 +26,68 @@ def generate_single_summary(match_info):
     breakdown = match_info.get('score_breakdown', {})
     fit_category = match_info.get('fit_category', 'moderate fit')
 
-    # --- Score display ---
-    final_score   = breakdown.get('final_hybrid', match_info.get('similarity_score', 0) * 100)
-    semantic_pts  = breakdown.get('semantic_points',  0)
-    skills_pts    = breakdown.get('skills_points',    0)
-    domain_pts    = breakdown.get('domain_points',    0)
-    edu_pts       = breakdown.get('education_points', 0)
-    sen_pts       = breakdown.get('seniority_points', 0)
+    final_score = breakdown.get('final_hybrid', match_info.get('similarity_score', 0) * 100)
 
-    # --- Domain & profile labels ---
-    cv_domain   = breakdown.get('cv_domain',   'unknown')
-    job_domain  = breakdown.get('job_domain',  'unknown')
-    dom_compat  = breakdown.get('domain_compatibility', 'unknown')
-    cv_edu      = breakdown.get('cv_education',  'unknown')
-    job_edu     = breakdown.get('job_education', 'not specified')
-    cv_sen      = breakdown.get('cv_seniority',  'unknown')
-    job_sen     = breakdown.get('job_seniority', 'unknown')
+    # Raw texts — injected by main.py into every match dict
+    cv_text  = match_info.get('cv_text',  '')[:3000]   # truncate to stay within token budget
+    job_text = match_info.get('job_text', '')[:2000]
 
-    # --- Skills lists ---
-    matched  = gap.get('matched_skills', [])[:8]
-    missing  = gap.get('missing_skills', [])[:8]
-    matched_str = ', '.join(matched) if matched else 'None'
-    missing_str = ', '.join(missing) if missing else 'None'
-
-    prompt = f"""
-You are MatchAI, a friendly but highly analytical career assistant.
-Your job is to cleanly analyze matching skills and explain CV-to-job matching results in a way that feels human, supportive, and easy to understand — like a mentor.
-
-- CRITICAL: You MUST filter the skills lists down to ONLY actual professional skills. This includes Hard Skills, Soft Skills, Tooling, and Certifications. Delete noise words like "Able", "LI", "Brand".
-- Format skills in Title Case, except for acronyms which must be ALL CAPS (e.g., 'EHR', 'SEO').
-- CRITICAL TONE: You are speaking DIRECTLY to the candidate. Address them as 'you' and 'your'. NEVER refer to 'the candidate'. Do NOT use exact numbers or fractions in your text—keep it conceptual.
-- CRITICAL ALIGNMENT: Your written analysis MUST perfectly align with the score. Note that domain matching is extremely important. If their domain matches, praise it. If not, point it out.
-- Keep response under 150 words total excluding the skills lists.
-
-DATA TO ANALYZE:
-Overall Match Score     : {final_score:.1f}% ({fit_category})
-Your domain             : {cv_domain}
-Job domain              : {job_domain} (Match: {dom_compat})
-Your education          : {cv_edu} vs Required: {job_edu}
-Your seniority          : {cv_sen} vs Required: {job_sen}
-Raw Matched Skills      : {matched_str}
-Raw Missing Skills      : {missing_str}
-
-Now respond using EXACT structure:
-Clean_Matched_Skills:
-[comma separated list of actual professional skills (hard or soft)]
-Clean_Missing_Skills:
-[comma separated list of actual professional skills (hard or soft)]
-Strengths:
-Explain clearly why your matched skills and profile make you a strong fit for this role.
-Gaps:
-What you are missing conceptually. Do not use numbers. Only mention domain/education if there's a mismatch.
-Advice:
-Give 2–3 very practical next steps or courses for you to improve.
-Overall:
-Explain whether you are a strong, moderate, or weak fit conceptually based on the data.
-"""
-
-    # === DEBUG: Check API key ===
     api_key = os.environ.get("OPENAI_API_KEY", "")
     print(f"[DEBUG] OPENAI_API_KEY present: {bool(api_key)}")
-    if api_key:
-        print(f"[DEBUG] Key length: {len(api_key)}, starts with: {api_key[:8]}...")
-    else:
-        print("[DEBUG] OPENAI_API_KEY is EMPTY — no API call will be made")
-
     if not api_key:
         match_info['llm_summary'] = "OpenAI API Key is missing. Please provide one to enable AI Analysis."
         return match_info
 
-    # === DEBUG: Check what endpoint we're actually hitting ===
-    endpoint = 'https://api.openai.com/v1/chat/completions'
-    print(f"[DEBUG] Target endpoint: {endpoint}")
+    # If we don't have the raw texts yet, fall back gracefully
+    if not cv_text or not job_text:
+        match_info['llm_summary'] = "Raw document text unavailable for AI skill extraction."
+        return match_info
 
+    prompt = f"""You are MatchAI, a career mentor AI.
+
+OFFICIAL MATCH SCORE: {final_score:.1f}% — this is the authoritative hybrid score calculated by the system. Your summary MUST reference this exact number. Do NOT calculate or mention any other overall percentage.
+
+STRICT RULES — read before anything else:
+- "matched_skills" MUST contain only skills from the JOB DESCRIPTION that are also clearly present or demonstrated in the candidate's CV (either as exact matches or direct semantic synonyms).
+- "missing_skills" MUST contain skills from the JOB DESCRIPTION that are required or preferred but are completely absent from the candidate's CV.
+- Do NOT assume the candidate has specialized platform/tool skills (like "SQL", "Python", "Google Ads", "Facebook Ads") unless they are explicitly listed in their CV.
+- Extract only NOUNS and NOUN PHRASES that are professional skills, tools, software, certifications, or qualifications (e.g., "Python", "Project Management", "Adobe Photoshop")
+- NEVER extract: adjectives (long, strong, good), adverbs, verbs, or standalone generic words (experience, work, team, able, provide, manage, support, knowledge, background, ability)
+- NEVER extract: standalone platform names (Facebook, Instagram, LinkedIn, Tiktok, Snapchat) unless they are part of a specific technical competency (e.g., "Facebook Ads", "LinkedIn Sales Navigator")
+- NEVER extract: scheduling info (8AM-5PM, Monday-Friday, full-time, part-time, weekends, shifts)
+- NEVER extract: locations (London, remote, on-site, hybrid)
+- NEVER extract: years of experience (3 years, entry-level, senior)
+- Format: Title Case for multi-word phrases ("Patient Care", "Data Analysis"), ALL CAPS for acronyms ("EHR", "AWS", "SQL")
+- If unsure whether something is a real professional skill — leave it out
+- Respond ONLY with valid JSON. No markdown, no extra text.
+
+CV:
+{cv_text}
+
+JOB DESCRIPTION:
+{job_text}
+
+Return ONLY this JSON:
+{{
+  "matched_skills": ["Skill One", "Skill Two"],
+  "missing_skills": ["Skill Three", "Skill Four"],
+  "summary": "1-2 warm sentences addressing the candidate as you. Must state the overall match is {final_score:.1f}% ({fit_category}) and align your tone with that tier."
+}}"""
+
+    endpoint = 'https://api.openai.com/v1/chat/completions'
     data = json.dumps({
         "model": "gpt-4o-mini",
         "messages": [
             {
                 "role": "system",
-                "content": (
-                    "You are MatchAI. You explain CV-job matches clearly and warmly like a mentor. "
-                    "You are friendly but never vague or motivational without evidence. "
-                    "You always stay grounded in the provided skills."
-                )
+                "content": "You are MatchAI, a career mentor. You ALWAYS respond with valid JSON only. No markdown, no extra text."
             },
             {"role": "user", "content": prompt}
         ],
-        "temperature": 0.4,
-        "max_tokens": 800
+        "response_format": {"type": "json_object"},
+        "temperature": 0.3,
+        "max_tokens": 600
     }).encode('utf-8')
-
-    print(f"[DEBUG] Request payload size: {len(data)} bytes")
-    print(f"[DEBUG] Model requested: gpt-4o-mini")
 
     req = urllib.request.Request(
         endpoint,
@@ -112,52 +99,52 @@ Explain whether you are a strong, moderate, or weak fit conceptually based on th
     )
 
     try:
-        print(f"[DEBUG] Sending request to {endpoint}...")
-        with urllib.request.urlopen(req, timeout=15) as response:
-            raw = response.read().decode('utf-8')
+        with urllib.request.urlopen(req, timeout=20) as response:
+            raw    = response.read().decode('utf-8')
             result = json.loads(raw)
+            content = result['choices'][0]['message']['content'].strip()
+            parsed  = json.loads(content)
 
-            summary = result['choices'][0]['message']['content'].strip()
-            print(f"[DEBUG] Summary length: {len(summary)} chars")
+            # Safeguard: if the LLM flags a skill as missing but it's literally
+            # present in the CV text, move it to matched_skills instead.
+            matched_skills = parsed.get('matched_skills', [])
+            missing_skills = parsed.get('missing_skills', [])
+            still_missing = []
+            for skill in missing_skills:
+                if _is_skill_in_cv(skill, cv_text):
+                    matched_skills.append(skill)
+                else:
+                    still_missing.append(skill)
+            parsed['matched_skills'] = matched_skills
+            parsed['missing_skills'] = still_missing
 
-            import re
-            cleaned_matched_match = re.search(r'Clean_Matched_Skills:\s*([\s\S]*?)(?=Clean_Missing_Skills:)', summary)
-            cleaned_missing_match = re.search(r'Clean_Missing_Skills:\s*([\s\S]*?)(?=Strengths:)', summary)
-            
-            if cleaned_matched_match:
-                cleaned_matched_str = cleaned_matched_match.group(1).strip()
-                if gap:
-                    gap['matched_skills'] = [s.strip().strip("[]") for s in cleaned_matched_str.split(',') if s.strip() and s.strip().lower() != 'none']
-            if cleaned_missing_match:
-                cleaned_missing_str = cleaned_missing_match.group(1).strip()
-                if gap:
-                    gap['missing_skills'] = [s.strip().strip("[]") for s in cleaned_missing_str.split(',') if s.strip() and s.strip().lower() != 'none']
+            # Write cleaned skills back to gap_analysis so the UI gets them
+            if gap is not None:
+                if 'matched_skills' in parsed:
+                    gap['matched_skills'] = parsed['matched_skills']
+                if 'missing_skills' in parsed:
+                    gap['missing_skills'] = parsed['missing_skills']
+                gap['skills_source'] = 'llm'
 
-            match_info['llm_summary'] = summary
+            match_info['llm_summary'] = parsed.get('summary', '')
+            print(f"[DEBUG] LLM extracted {len(parsed.get('matched_skills',[]))} matched, {len(parsed.get('missing_skills',[]))} missing skills")
 
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8', errors='replace')
-        print(f"[DEBUG] HTTP ERROR {e.code}: {e.reason}")
-        print(f"[DEBUG] Error body: {body[:500]}")
-        match_info['llm_summary'] = (
-            "We assessed your CV against the job description, "
-            "but the AI service is currently unavailable."
-        )
+        print(f"[DEBUG] HTTP ERROR {e.code}: {e.reason} — {body[:300]}")
+        match_info['llm_summary'] = "AI service temporarily unavailable."
+        if gap is not None: gap['skills_source'] = 'nlp_fallback'
     except urllib.error.URLError as e:
-        print(f"[DEBUG] URL ERROR (connection failed): {e.reason}")
-        print(f"[DEBUG] This could mean: wrong endpoint, no internet, or firewall block")
-        match_info['llm_summary'] = (
-            "We assessed your CV against the job description, "
-            "but the AI service is currently unavailable."
-        )
+        print(f"[DEBUG] URL ERROR: {e.reason}")
+        match_info['llm_summary'] = "AI service temporarily unavailable."
+        if gap is not None: gap['skills_source'] = 'nlp_fallback'
     except Exception as e:
         print(f"[DEBUG] UNEXPECTED ERROR: {type(e).__name__}: {e}")
-        match_info['llm_summary'] = (
-            "We assessed your CV against the job description, "
-            "but the AI service is currently unavailable."
-        )
+        match_info['llm_summary'] = "AI service temporarily unavailable."
+        if gap is not None: gap['skills_source'] = 'nlp_fallback'
 
     return match_info
+
 
 
 def enrich_matches_with_llm(matches):

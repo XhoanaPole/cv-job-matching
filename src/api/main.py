@@ -1,5 +1,6 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from pydantic import BaseModel
 from typing import List, Optional
 import sys
@@ -21,11 +22,48 @@ from vector_store.faiss_index import FAISSJobIndex
 from matching.matcher import CVJobMatcher          # v1 — kept for reference
 from matching.matcher_v2 import CVJobMatcherV2     # v2 — 5-signal hybrid (active)
 from matching.llm_summary_v2 import enrich_matches_with_llm
+from agentic_debate.orchestrator import DebateOrchestrator
+
+# Global instances (initialized on startup)
+matcher = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize the matching system on startup, clean up on shutdown."""
+    global matcher
+
+    INDEX_FILE = 'data/processed/faiss.index'
+    METADATA_FILE = 'data/processed/metadata.pkl'
+
+    cleaner = TextCleaner(
+        remove_emails=True,
+        remove_phone=True,
+        remove_urls=True,
+        min_length=50
+    )
+
+    embedder = TextEmbedder(model_name='all-MiniLM-L6-v2')
+
+    faiss_index = FAISSJobIndex.load_or_create(
+        INDEX_FILE,
+        METADATA_FILE,
+        embedding_dim=embedder.embedding_dim
+    )
+
+    matcher = CVJobMatcherV2(cleaner, embedder, faiss_index)
+
+    print("- Matching system initialized")
+    print(f"- Jobs in index: {matcher.index.index.ntotal}")
+
+    yield  # server runs here
+
+    matcher = None
 
 app = FastAPI(
     title="Smart CV Job Matching API",
     description="Match junior/entry-level students with relevant job opportunities",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Enable CORS for the frontend application
@@ -36,9 +74,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Global instances (initialized on startup)
-matcher = None
 
 class JobDescription(BaseModel):
     job_id: str
@@ -66,37 +101,6 @@ class MatchResponse(BaseModel):
     matches: List[dict]
     error: Optional[str] = None
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize the matching system on startup."""
-    global matcher
-    
-    # Paths for persistent storage
-    INDEX_FILE = 'data/processed/faiss.index'
-    METADATA_FILE = 'data/processed/metadata.pkl'
-    
-    # Initialize components
-    cleaner = TextCleaner(
-        remove_emails=True,
-        remove_phone=True,
-        remove_urls=True,
-        min_length=50
-    )
-    
-    embedder = TextEmbedder(model_name='all-MiniLM-L6-v2')
-    
-    # Try to load existing index, or create new one
-    faiss_index = FAISSJobIndex.load_or_create(
-        INDEX_FILE,
-        METADATA_FILE,
-        embedding_dim=embedder.embedding_dim
-    )
-    
-    # Create matcher — V2 (5-signal hybrid: semantic + skills + domain + education + seniority)
-    matcher = CVJobMatcherV2(cleaner, embedder, faiss_index)
-    
-    print("- Matching system initialized")
-    print(f"- Jobs in index: {matcher.index.index.ntotal}")
 
 @app.get("/")
 async def root():
@@ -244,39 +248,38 @@ async def match_cv_file(file: UploadFile = File(...), top_k: int = 10):
 @app.post("/compare/upload", response_model=MatchResponse)
 async def compare_dynamic_upload(
     cv_file: UploadFile = File(...),
-    job_files: List[UploadFile] = File(default=[]),
-    job_urls: List[str] = Form(default=[])
+    job_files: List[UploadFile] = File(default=[])
 ):
     """
-    Compare a single CV against a list of job descriptions via multi-part file upload and/or URLs.
-    Supports .txt, .pdf, .docx, and live web scraping.
+    Compare a single CV against a list of job descriptions via multi-part file upload.
+    Supports .txt, .pdf, and .docx files.
     """
     if not matcher:
         raise HTTPException(status_code=500, detail="Core models not initialized")
-    
-    if not job_files and not job_urls:
-        raise HTTPException(status_code=400, detail="No job descriptions or URLs provided")
+
+    if not job_files:
+        raise HTTPException(status_code=400, detail="No job description files provided")
         
     doc_parser = DocumentParser()
     temp_dir = tempfile.mkdtemp()
     
     try:
         # Save and parse CV
-        cv_path = os.path.join(temp_dir, cv_file.filename)
+        cv_path = os.path.join(temp_dir, os.path.basename(cv_file.filename))
         with open(cv_path, "wb") as f:
             f.write(await cv_file.read())
-            
+
         cv_text = doc_parser.parse_file(cv_path)
         if not cv_text:
             raise HTTPException(status_code=400, detail="Failed to parse CV document. Ensure it is a valid format.")
-            
+
         # Save and parse Jobs
         parsed_jobs = []
         parsed_job_ids = []
         for j_file in job_files:
             if not j_file.filename:
                 continue
-            j_path = os.path.join(temp_dir, j_file.filename)
+            j_path = os.path.join(temp_dir, os.path.basename(j_file.filename))
             with open(j_path, "wb") as f:
                 f.write(await j_file.read())
             
@@ -285,21 +288,8 @@ async def compare_dynamic_upload(
                 parsed_jobs.append(j_text)
                 parsed_job_ids.append(j_file.filename.split('.')[0])
                 
-        # Parse URLs
-        for url in job_urls:
-            url_str = url.strip()
-            if not url_str:
-                continue
-                
-            from urllib.parse import urlparse
-            domain = urlparse(url_str).netloc.replace('www.', '')
-            j_text = doc_parser.parse_url(url_str)
-            if j_text:
-                parsed_jobs.append(j_text)
-                parsed_job_ids.append(f"WebDomain_{domain.split('.')[0]}")
-                
         if not parsed_jobs:
-            raise HTTPException(status_code=400, detail="Failed to parse any of the job description documents or URLs.")
+            raise HTTPException(status_code=400, detail="Failed to parse any of the provided job description files.")
             
         # 1. Clean jobs
         cleaned_results = matcher.cleaner.clean_batch(parsed_jobs)
@@ -326,6 +316,16 @@ async def compare_dynamic_upload(
             top_k=len(valid_job_ids)
         )
         
+        # Inject texts for client-side debate triggering
+        if 'matches' in result:
+            for match in result['matches']:
+                match['cv_text'] = cv_text
+                try:
+                    idx = valid_job_ids.index(match['job_id'])
+                    match['job_text'] = cleaned_texts[idx]
+                except ValueError:
+                    match['job_text'] = ""
+        
         # 6. Enrich with LLM Summaries (Parallel)
         if 'matches' in result:
             result['matches'] = enrich_matches_with_llm(result['matches'])
@@ -335,6 +335,65 @@ async def compare_dynamic_upload(
     finally:
         # Clean up temporary files
         shutil.rmtree(temp_dir, ignore_errors=True)
+
+@app.post("/compare/text", response_model=MatchResponse)
+async def compare_text(request: CompareRequest):
+    """
+    Compare a CV (pasted as plain text) against job descriptions (also pasted as text).
+    Mirrors /compare/upload but accepts JSON instead of multipart form data.
+    """
+    if not matcher:
+        raise HTTPException(status_code=500, detail="Core models not initialized")
+    if not request.jobs:
+        raise HTTPException(status_code=400, detail="No job descriptions provided")
+    if not request.cv_text.strip():
+        raise HTTPException(status_code=400, detail="CV text cannot be empty")
+
+    cv_text  = request.cv_text
+    job_texts = [j.description for j in request.jobs]
+    job_ids   = [j.job_id      for j in request.jobs]
+
+    cleaned_results = matcher.cleaner.clean_batch(job_texts)
+    if not cleaned_results:
+        raise HTTPException(status_code=400, detail="Job descriptions are too short or invalid after cleaning")
+
+    cleaned_texts  = [r['cleaned_text']               for r in cleaned_results]
+    valid_job_ids  = [job_ids[r['original_index']]    for r in cleaned_results]
+
+    job_embeddings = matcher.embedder.embed_batch(cleaned_texts, show_progress=False)
+    temp_index = FAISSJobIndex(embedding_dim=matcher.embedder.embedding_dim)
+    temp_index.add_jobs(job_embeddings=job_embeddings, job_ids=valid_job_ids, job_texts=cleaned_texts)
+
+    temp_matcher = CVJobMatcherV2(matcher.cleaner, matcher.embedder, temp_index)
+    result = temp_matcher.match_cv_to_jobs(cv_text=cv_text, cv_id="pasted_cv", top_k=len(valid_job_ids))
+
+    if 'matches' in result:
+        for match in result['matches']:
+            match['cv_text'] = cv_text
+            try:
+                idx = valid_job_ids.index(match['job_id'])
+                match['job_text'] = cleaned_texts[idx]
+            except ValueError:
+                match['job_text'] = ""
+        result['matches'] = enrich_matches_with_llm(result['matches'])
+
+    return result
+
+
+class DebateRequest(BaseModel):
+    cv_text: str
+    job_text: str
+    faiss_score: float
+
+@app.post("/compare/debate")
+async def compare_debate(request: DebateRequest):
+    orchestrator = DebateOrchestrator()
+    result = await orchestrator.run_debate(
+        cv_text=request.cv_text, 
+        job_text=request.job_text, 
+        faiss_score=request.faiss_score
+    )
+    return result
 
 @app.get("/stats")
 async def get_stats():

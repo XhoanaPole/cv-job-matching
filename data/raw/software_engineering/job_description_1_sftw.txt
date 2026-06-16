@@ -1,0 +1,70 @@
+Senior Software Engineer — Rozafa Consulting
+
+Rozafa Consulting is growing fast, and we are looking for a Senior Software Engineer who loves building high-impact platforms, solving complex problems, and working with modern technologies and AI-powered development tools.
+
+If you want to build products used by thousands of users in Albania and internationally, this role is for you.
+
+Your responsibilities include:
+
+Building and scaling backend services and APIs
+Developing modern web and mobile applications
+Designing system architecture and leading technical decisions
+Deploying and managing cloud infrastructure on AWS
+Integrating AI/LLM capabilities into products and internal workflows
+Leveraging AI coding assistants to ship faster without compromising quality
+Improving performance, reliability, and security
+Collaborating with product, design, and management teams
+We're looking for experience with most of the following:
+
+Node.js
+TypeScript
+PostgreSQL
+MongoDB
+Redis
+REST APIs
+System design
+React.js
+Next.js
+React Native
+AWS (EC2, S3, RDS, Lambda, Cognito, CloudFront, API Gateway)
+Docker & Docker Compose
+GitHub Actions CI/CD
+AI development tools such as Claude Code, Cursor, GitHub Copilot, or similar
+LLM APIs (OpenAI, Anthropic) and prompt engineering fundamentals
+Responsibilities
+
+Lead feature development and technical planning
+Write clean, scalable, maintainable code
+Use AI tools effectively to accelerate development, code review, and debugging
+Mentor junior developers, including on best practices for AI-assisted workflows
+Analyze and solve complex technical problems
+Deploy and maintain applications on AWS
+Participate in code reviews and architecture discussions
+Maintain high standards of performance and security
+Requirements
+
+4+ years of experience in software development
+Strong knowledge of Node.js & modern JavaScript/TypeScript
+Experience with React and Next.js
+Solid understanding of PostgreSQL and MongoDB
+Hands-on experience with AWS deployment workflows
+Practical experience using AI coding assistants (Claude Code, Cursor, Copilot, etc.) as part of a daily development workflow
+Familiarity with integrating LLM APIs into production applications is a strong plus
+Strong debugging/problem-solving skills
+Comfortable working independently and taking ownership
+Good communication skills
+What We Offer
+
+Competitive salary (based on experience)
+Hybrid/remote working options
+Opportunities to work on diverse, high-impact projects, including AI-driven products
+Friendly team and strong engineering culture
+Access to modern AI development tools and a culture that embraces them
+Growth in DevOps, architecture, AI projects, and leadership roles
+Work with modern tech and users at scale
+
+Requirements added by the job poster
+
+• 3+ years of work experience with Node.js
+
+• 3+ years of work experience with React.js

@@ -1,0 +1,82 @@
+Name: Ardit Kola
+Contact:
+Tirana, Albania
+Phone: +355 69 412 7781
+Email: ardit.kola.dev@gmail.com
+LinkedIn: linkedin.com/in/arditkola
+
+Summary
+
+Recent Software Engineering graduate with a strong academic background in backend development, database systems, and web application design. Graduated from the Polytechnic University of Tirana with a GPA of 3.8 and completed several academic and freelance projects involving Java, Python, REST APIs, and relational databases. Passionate about building scalable applications and learning modern software engineering practices. Experienced in collaborative development through university team projects and internships. Strong problem-solving skills with a keen interest in software architecture, cloud technologies, and API development. Comfortable working in Agile environments and adapting quickly to new frameworks and technologies.
+
+Work Experience
+
+Junior Software Development Intern
+TechNova Solutions — Tirana, Albania
+July 2024 – October 2024
+
+Assisted the backend development team in maintaining internal web applications developed using Java Spring Boot.
+Developed REST API endpoints for employee management modules and participated in API testing using Postman.
+Collaborated with senior developers to debug application errors and improve system performance.
+Contributed to database optimization tasks involving MySQL query restructuring and indexing.
+Participated in weekly sprint planning meetings and daily stand-up sessions following Agile methodologies.
+Documented backend functionalities and API integration procedures for internal team use.
+Helped integrate authentication and authorization features using JWT-based security mechanisms.
+
+Freelance Web Developer
+Self-Employed — Tirana, Albania
+January 2024 – June 2024
+
+Developed responsive websites for small local businesses using HTML, CSS, JavaScript, and Bootstrap.
+Customized frontend interfaces according to client branding and usability requirements.
+Integrated contact forms and basic content management features using PHP and MySQL.
+Improved website responsiveness and loading speed through optimization techniques.
+Maintained communication with clients to gather requirements and provide project updates.
+Education
+
+Bachelor of Science in Software Engineering
+Polytechnic University of Tirana
+2021 – 2024
+GPA: 3.8/4.0
+
+Relevant Coursework:
+
+Data Structures and Algorithms
+Object-Oriented Programming
+Software Architecture
+Database Management Systems
+Operating Systems
+Web Programming
+Computer Networks
+Artificial Intelligence Fundamentals
+Academic Projects
+
+University Management System
+
+Designed and developed a web-based university management platform using Java Spring Boot and MySQL.
+Implemented modules for course registration, grading, and student authentication.
+Collaborated with a team of four students using Git and GitHub version control practices.
+
+Task Tracking Application
+
+Created a full-stack task management application using React and Node.js.
+Integrated JWT authentication and role-based access control.
+Deployed the project locally using Docker containers during testing.
+Skills
+
+Programming Languages:
+Java, Python, JavaScript, SQL, PHP
+
+Frameworks and Tools:
+Spring Boot, React, Node.js, Bootstrap, Git, GitHub, Docker, Postman
+
+Databases:
+MySQL, PostgreSQL
+
+Concepts:
+REST APIs, Object-Oriented Programming, Agile Development, MVC Architecture, Database Design
+
+Languages
+Albanian — Native
+English — Fluent
+Italian — Intermediate

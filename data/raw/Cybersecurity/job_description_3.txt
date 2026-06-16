@@ -1,0 +1,41 @@
+About the job
+
+Junior Cybersecurity Analyst
+AlbTech Solutions | Tirana, Albania
+Full-time | Hybrid (3 days on-site)
+
+About Us
+AlbTech Solutions is a fast-growing Albanian IT services and managed security company providing cybersecurity, cloud infrastructure, and digital transformation services to clients across banking, retail, and public sector in Albania and the Western Balkans. Our security operations team monitors and protects the infrastructure of over 40 active clients and we are expanding our SOC team to meet growing demand. We are looking for a motivated recent graduate to join us as a Junior Cybersecurity Analyst and grow within a structured mentorship programme.
+
+The Role
+This is an entry-level position within our Security Operations Centre. You will work alongside senior analysts monitoring client infrastructure, investigating security alerts, and contributing to vulnerability assessments and incident response activities. You will receive structured on-the-job training and access to professional certification programmes from your first month.
+
+What You Will Do
+- Monitor security alerts and events across client environments using our SIEM platform, triaging and escalating incidents according to severity classification procedures
+- Investigate low and medium severity security alerts, document findings, and prepare incident reports for senior analyst review
+- Assist in conducting vulnerability scans using Nessus and Qualys, preparing scan reports and tracking remediation progress with client teams
+- Support senior analysts in firewall rule reviews, log analysis, and network traffic investigation using Wireshark and similar tools
+- Maintain and update security documentation including runbooks, incident logs, and client configuration records
+- Participate in weekly threat intelligence briefings and contribute to internal knowledge base articles on emerging threats and attack techniques
+- Assist in phishing simulation campaigns and security awareness training coordination for client organisations
+- Support the team in preparing monthly security posture reports for client management presentations
+
+What We Are Looking For
+- Bachelor's degree in Computer Science, Information Technology, Cybersecurity, or a related technical field
+- Basic understanding of networking fundamentals including TCP/IP, DNS, HTTP, firewalls, and VPNs
+- Familiarity with Windows and Linux operating systems at an administrative level
+- Genuine interest and passion for cybersecurity — personal projects, CTF participation, or self-study will be valued
+- Strong analytical thinking and attention to detail in a high-volume alert environment
+- Good written and verbal communication skills in Albanian and English
+- Entry level certifications such as CompTIA Security+, CompTIA Network+, or CEH are a strong advantage
+- 0-1 years of experience or internship in IT, networking, or cybersecurity
+
+What We Offer
+- Competitive entry-level salary with quarterly performance review
+- Fully funded professional certification programme covering CompTIA Security+, CEH, and OSCP pathways
+- Structured mentorship from senior SOC analysts and security engineers
+- Access to hands-on lab environments and cybersecurity training platforms
+- Clear career progression pathway toward SOC Analyst Level 2 and Security Engineer roles
+- Private health insurance and flexible hybrid working arrangement
+
+We are an equal opportunity employer and welcome applications from all qualified candidates.

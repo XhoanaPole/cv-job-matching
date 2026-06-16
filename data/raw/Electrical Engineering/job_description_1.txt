@@ -1,0 +1,75 @@
+Position: Electrical Engineer — Building Systems & Infrastructure
+Company: ElektroTek Engineering Group
+Location: Tirana, Albania (On-site)
+Type: Full-Time, Permanent
+Posted: May 2026
+Source: LinkedIn / Company Website
+
+About Us
+ElektroTek Engineering Group is a multidisciplinary engineering consultancy based in Tirana, providing electrical, mechanical, and civil engineering design and supervision services for residential, commercial, and infrastructure projects across Albania. Founded in 2011, we have delivered over 180 projects including high-rise residential towers, hotel developments, industrial facilities, and public infrastructure works. Our electrical engineering division handles low-voltage systems, medium-voltage distribution, building automation, fire alarm design, and lighting engineering for projects of all scales.
+
+Role Overview
+We are looking for an Electrical Engineer with hands-on experience in building electrical systems design and construction site supervision to join our growing electrical division. The successful candidate will work on live residential, commercial, and mixed-use projects, taking responsibility for electrical design packages, load calculations, and site coordination under the supervision of the Lead Electrical Engineer. This role requires someone with a solid electrical engineering foundation, practical site experience, and the ability to produce and coordinate technical documentation independently.
+
+Key Responsibilities
+
+Design low-voltage electrical systems for residential, commercial, and mixed-use buildings including power distribution networks, lighting systems, earthing and bonding, and consumer unit/distribution board layouts.
+Perform electrical load calculations, cable sizing, voltage drop analysis, and fault current calculations in accordance with IEC standards and Albanian electrical regulations.
+Produce complete electrical drawing sets using AutoCAD Electrical including single-line diagrams, distribution board schedules, cable routing plans, earthing layouts, and lighting layouts.
+Coordinate electrical drawing sets with architectural, structural, and MEP teams to resolve spatial conflicts and ensure technical consistency across disciplines.
+Conduct construction site visits to verify electrical installation compliance with approved drawings and technical specifications, issuing site instructions and RFI responses to electrical contractors.
+Design fire alarm, emergency lighting, and basic structured cabling systems in accordance with relevant EN standards.
+Review electrical contractor shop drawings, equipment submittals, and product datasheets for compliance with design specifications.
+Prepare tender documentation for electrical works packages including technical specifications, bills of quantities, and equipment schedules.
+Assist in preparing commissioning documentation and testing records for completed electrical installations.
+Ensure all designs comply with Albanian electrical regulations, IEC 60364 series standards, and Eurocode requirements.
+
+
+Required Qualifications
+
+Bachelor's or Master's degree in Electrical Engineering or Electrical and Electronics Engineering.
+2–4 years of professional experience in building electrical systems design within an engineering consultancy.
+Proficiency in AutoCAD Electrical for production of electrical drawing sets.
+Strong working knowledge of low-voltage system design including IEC 60364, cable sizing methodologies, and distribution board design.
+Demonstrated experience performing electrical load calculations and fault level analysis.
+Familiarity with Albanian electrical installation regulations and connection requirements of OST (Albanian Power Distribution Operator).
+Experience conducting construction site supervision for electrical works.
+Fluent in Albanian and English — technical English essential for reading IEC standards and international specifications.
+Strong analytical skills and attention to detail in technical documentation.
+
+
+Where the Gap Is — Why This Is Moderate for Erjon
+
+Erjon's degree is in Mechanical Engineering and Building Services — not Electrical Engineering. The role requires electrical-specific training he does not have formally.
+His software stack (SolidWorks, AutoCAD MEP, HAP) does not include AutoCAD Electrical or electrical-specific analysis tools.
+He has no demonstrated experience with low-voltage system design, cable sizing, fault current calculations, or distribution board design.
+IEC 60364 and OST Albanian power distribution regulations are not part of his background.
+Fire alarm and emergency lighting system design are outside his current scope.
+His construction site experience is on mechanical and HVAC installations — valuable overlap but not directly transferable to electrical supervision.
+His HVAC and plumbing coordination experience does demonstrate MEP coordination capability, which is a genuine crossover strength.
+His site visit, shop drawing review, and tender documentation experience from his MEP role are directly relevant and would be recognised.
+
+
+Nice to Have
+
+Master's degree in Electrical Engineering or Power Systems.
+Experience with medium-voltage system design or HV substation coordination.
+Knowledge of building automation and BMS integration with electrical systems.
+Familiarity with photovoltaic system design and grid connection procedures in Albania.
+Registration with the Albanian Order of Engineers — electrical discipline.
+Experience with DIALUX or RELUX lighting design software.
+Exposure to industrial electrical systems or infrastructure projects such as road lighting or substation works.
+
+
+What We Offer
+
+Direct involvement in live residential, commercial, and infrastructure electrical projects.
+Structured mentorship from senior electrical engineers with 15+ years of local project experience.
+Exposure to medium-voltage and renewable energy projects within the wider group portfolio.
+Competitive salary reviewed at 6 months based on performance.
+Support toward Albanian Order of Engineers registration — electrical discipline.
+Professional development budget for IEC standards training and software courses.
+
+Contract: Full-Time, Permanent
+Salary: ALL 90,000 – 130,000 / month (negotiable based on experience)
+Application: Send CV, portfolio of project experience, and cover letter to careers@elektrotek-al.com — quoting "Electrical Engineer — Building Systems" in the subject line.

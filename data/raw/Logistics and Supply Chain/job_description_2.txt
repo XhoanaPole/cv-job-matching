@@ -1,0 +1,32 @@
+JOB TITLE: Supply Chain Analyst
+COMPANY: Balfin Group — Operations Division
+LOCATION: Tirana, Albania
+TYPE: Full-time | Hybrid
+
+SUMMARY
+Balfin Group is one of the largest and most diversified investment groups in the Western Balkans, with operations spanning real estate, retail, financial services, and energy across eight countries. Our Operations Division manages supply chain functions for the group's retail and construction business units, overseeing procurement, inventory management, and logistics across multiple warehouses and distribution points. We are seeking an experienced Supply Chain Analyst to strengthen our analytical capabilities and drive data-driven improvements across the supply chain.
+
+RESPONSIBILITIES
+- Analyse end-to-end supply chain performance data including procurement lead times, inventory turnover, and transportation costs across all active business units
+- Develop and maintain Power BI dashboards tracking key supply chain KPIs for weekly and monthly senior management reporting
+- Conduct demand forecasting analysis using historical sales and inventory data to optimise stock replenishment cycles and reduce overstock and shortage incidents
+- Identify bottlenecks, inefficiencies, and cost reduction opportunities across the procurement and logistics chain and present actionable recommendations to the Operations Director
+- Support the procurement team in supplier performance evaluation through quarterly scorecards covering on-time delivery, quality compliance, and pricing competitiveness
+- Collaborate with warehouse managers to improve inventory accuracy through cycle count programmes and ERP data reconciliation processes
+- Prepare monthly supply chain performance reports and present findings to senior management with clear visualisations and data-driven narratives
+- Support the implementation of supply chain improvement projects including ERP module upgrades and process standardisation initiatives across business units
+
+REQUIREMENTS
+- Bachelor's degree in Supply Chain Management, Economics, Industrial Engineering, or a related quantitative field
+- 2-4 years of experience in supply chain analysis, procurement, or logistics operations in a structured corporate environment
+- Advanced proficiency in Microsoft Excel including pivot tables, VLOOKUP, and financial modelling
+- Working knowledge of Power BI or equivalent data visualisation tools for KPI dashboard development
+- Familiarity with SAP or similar ERP systems used in procurement and inventory management
+- Strong analytical and quantitative skills with high attention to data accuracy and process documentation
+- Fluent in Albanian and English with strong written communication skills for management reporting
+
+PREFERRED QUALIFICATIONS
+- APICS CSCP or CLTD certification or equivalent professional supply chain qualification
+- Experience in a multi-entity or group company supply chain environment with cross-functional stakeholder management
+- Knowledge of Incoterms 2020 and Albanian customs regulations for import and export operations
+- Familiarity with lean or Six Sigma process improvement methodologies applied in operational settings

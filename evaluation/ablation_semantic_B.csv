@@ -1,0 +1,28 @@
+version,domain,cv_name,jd_id,score,system_cat,human_label,correct,skills_pct,skills_pts
+B_Semantic,Data Analysis,Data_Analyst,JD1_Entry,67.09,Moderate,Strong,NO,53.57,10.71
+B_Semantic,Data Analysis,Data_Analyst,JD2_Mid,43.93,Moderate,Moderate,YES,27.59,5.52
+B_Semantic,Data Analysis,Data_Analyst,JD3_Senior,31.01,Weak,Weak,YES,20.0,4.0
+B_Semantic,Marketing,Andi_Shehu,JD1_Entry,71.96,Strong,Moderate,NO,23.53,4.71
+B_Semantic,Marketing,Andi_Shehu,JD3_FMCG,71.38,Strong,Moderate,NO,41.67,8.33
+B_Semantic,Marketing,Andi_Shehu,JD2_Mid,58.42,Moderate,Strong,NO,42.86,8.57
+B_Semantic,Medicine,Maria_Kola,JD2_Entry,63.37,Moderate,Strong,NO,50.0,10.0
+B_Semantic,Medicine,Maria_Kola,JD1_Mid,53.94,Moderate,Moderate,YES,16.0,3.2
+B_Semantic,Medicine,Maria_Kola,JD3_Senior,44.18,Moderate,Weak,NO,22.73,4.55
+B_Semantic,Human Resources,Erisa,JD1_Entry,70.19,Strong,Strong,YES,30.77,6.15
+B_Semantic,Human Resources,Erisa,JD2_Mid,68.26,Moderate,Weak,NO,61.11,12.22
+B_Semantic,Human Resources,Erisa,JD3_Senior,34.98,Weak,Weak,YES,5.26,1.05
+B_Semantic,Human Resources,Klajdi,JD1_Entry,63.34,Moderate,Strong,NO,7.69,1.54
+B_Semantic,Human Resources,Klajdi,JD2_Mid,58.97,Moderate,Weak,NO,22.22,4.44
+B_Semantic,Human Resources,Klajdi,JD3_Senior,33.41,Weak,Weak,YES,5.26,1.05
+B_Semantic,Finance,Besa,JD1_Entry,67.04,Moderate,Strong,NO,21.05,4.21
+B_Semantic,Finance,Besa,JD3_Mid,34.47,Weak,Moderate,NO,7.5,1.5
+B_Semantic,Finance,Besa,JD2_Senior,27.38,Weak,Weak,YES,7.14,1.43
+B_Semantic,Finance,Endri,JD1_Entry,64.73,Moderate,Strong,NO,15.79,3.16
+B_Semantic,Finance,Endri,JD3_Mid,38.17,Weak,Weak,YES,15.0,3.0
+B_Semantic,Finance,Endri,JD2_Senior,29.36,Weak,Weak,YES,7.14,1.43
+B_Semantic,Software Engineering,Ardit,JD2_Mid,65.68,Moderate,Moderate,YES,48.65,9.73
+B_Semantic,Software Engineering,Ardit,JD1_Senior,46.07,Moderate,Weak,NO,25.0,5.0
+B_Semantic,Software Engineering,Ardit,JD3_GoSenior,26.89,Weak,Weak,YES,2.5,0.5
+B_Semantic,Software Engineering,Klea,JD2_Mid,58.39,Moderate,Moderate,YES,32.43,6.49
+B_Semantic,Software Engineering,Klea,JD1_Senior,45.82,Moderate,Weak,NO,27.5,5.5
+B_Semantic,Software Engineering,Klea,JD3_GoSenior,27.79,Weak,Weak,YES,2.5,0.5

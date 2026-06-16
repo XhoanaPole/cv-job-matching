@@ -79,8 +79,45 @@ class SkillsExtractorV2:
             'real', 'time', 'key', 'core', 'main', 'cross', 'end', 'based',
             'driven', 'related', 'level', 'type', 'example', 'following',
             'such', 'including', 'well', 'plus', 'also', 'both', 'other',
-            'more', 'most', 'than', 'not', 'no', 'all', 'any', 'each',
             'every', 'same', 'own', 'different', 'various', 'multiple',
+            'able', 'capable', 'effective', 'proficient', 'knowledgeable',
+            'successful', 'excellent', 'outstanding', 'proven', 'demonstrated',
+            'expert', 'advanced', 'intermediate', 'basic', 'familiar',
+            'understanding', 'working', 'experience', 'skills', 'skill',
+            'ability', 'track', 'record', 'team', 'teams', 'player',
+            'independent', 'motivated', 'driven', 'detail', 'oriented',
+            'fast', 'paced', 'environment', 'dynamic', 'highly', 'strong',
+            'solid', 'deep', 'broad', 'extensive', 'comprehensive', 'hands',
+            'on', 'practical', 'theoretical', 'academic', 'professional',
+            'personal', 'excellent', 'great', 'good', 'better', 'best',
+            'top', 'high', 'quality', 'level', 'entry', 'junior', 'senior',
+            'lead', 'manager', 'director', 'vp', 'president', 'chief',
+            'executive', 'officer', 'staff', 'member', 'associate',
+            'assistant', 'coordinator', 'specialist', 'analyst', 'consultant',
+            'engineer', 'developer', 'designer', 'architect', 'administrator',
+            'code', 'plan', 'core', 'main', 'key', 'primary', 'secondary',
+            'daily', 'weekly', 'monthly', 'yearly', 'annual', 'base', 'based',
+            'focus', 'focused', 'goal', 'goals', 'objective', 'objectives',
+            'aim', 'aims', 'target', 'targets', 'mission', 'vision', 'value',
+            'values', 'culture', 'diversity', 'inclusion', 'equity', 'equal',
+            'opportunity', 'employer', 'candidate', 'applicant', 'hire',
+            'hiring', 'recruiting', 'recruitment', 'talent', 'acquisition',
+            'resources', 'human', 'people', 'person', 'individual', 'group',
+            'department', 'division', 'branch', 'office', 'headquarters',
+            'local', 'global', 'international', 'national', 'regional',
+            'remote', 'hybrid', 'flexible', 'schedule', 'hours', 'time',
+            'part', 'full', 'contract', 'temporary', 'permanent', 'freelance',
+            'internship', 'volunteer', 'unpaid', 'paid', 'salary', 'wage',
+            'rate', 'pay', 'compensation', 'benefits', 'perks', 'bonus',
+            'commission', 'equity', 'stock', 'options', 'shares', 'profit',
+            'sharing', 'retirement', 'pension', 'health', 'dental', 'vision',
+            'life', 'insurance', 'disability', 'leave', 'vacation', 'holiday',
+            'sick', 'days', 'time', 'off', 'pto', 'paid', 'unpaid', 'maternity',
+            'paternity', 'parental', 'family', 'medical', 'bereavement',
+            'jury', 'duty', 'military', 'voting', 'sabbatical', 'study',
+            'training', 'development', 'education', 'tuition', 'reimbursement',
+            'assistance', 'allowance', 'stipend', 'grant', 'scholarship',
+            'loan', 'repayment', 'forgiveness', 'program', 'programs',
         }
 
         # ── Expanded multi-domain phrase library ─────────────────────────
@@ -112,6 +149,37 @@ class SkillsExtractorV2:
             r'\bversion control\b',
             r'\bcloud computing\b',
             r'\bmicroservices architecture\b',
+            # Civil / Structural Engineering
+            r'\bstructural analysis\b',
+            r'\bstructural design\b',
+            r'\bstructural engineering\b',
+            r'\breinforced concrete\b',
+            r'\bsteel structures\b',
+            r'\bmetal structures\b',
+            r'\bsteel detailing\b',
+            r'\bbuilding information modeling\b',
+            r'\bquantity surveying\b',
+            r'\bsite supervision\b',
+            r'\bconstruction management\b',
+            r'\bseismic design\b',
+            r'\bfoundation design\b',
+            r'\bgeotechnical engineering\b',
+            r'\bbridge engineering\b',
+            r'\bload calculation\b',
+            r'\bconcrete design\b',
+            r'\bsteel connection design\b',
+            # Architecture
+            r'\barchitectural design\b',
+            r'\bspace planning\b',
+            r'\binterior design\b',
+            r'\bproject visualization\b',
+            r'\bfeasibility study\b',
+            r'\bbuilding codes\b',
+            r'\bzoning regulations\b',
+            r'\burban planning\b',
+            r'\bsustainable design\b',
+            r'\bsite analysis\b',
+            r'\bconceptual design\b',
             # Healthcare / Medical
             r'\bpatient care\b',
             r'\bclinical assessment\b',
@@ -182,6 +250,24 @@ class SkillsExtractorV2:
         text = re.sub(r'\s+', ' ', text)
         return text.strip()
 
+    def _strip_non_skills(self, text: str) -> str:
+        """Remove scheduling, logistics, and other universally non-skill patterns
+        before any extraction method runs. These patterns are domain-agnostic:
+        they are never skills in any field (medicine, tech, teaching, etc.)."""
+        patterns = [
+            r'\b\d{1,2}[AaPp][Mm](?:\s*[-–]\s*\d{1,2}[AaPp][Mm])?\b',  # 8AM, 8AM-5PM
+            r'\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b',
+            r'\b(?:full|part)[\s-]time\b',
+            r'\b(?:remote|hybrid|on-?site|in-?person)\b',
+            r'\b\d+\s*(?:years?|months?|weeks?)\s*(?:of\s*)?(?:experience)?\b',
+            r'\b\d{1,2}\s*[-–]\s*\d{1,2}\s*(?:hours?|hrs?)\b',  # 8-5 hours
+            r'\bAvailability\b',
+            r'\bShift\b',
+        ]
+        for p in patterns:
+            text = re.sub(p, '', text, flags=re.IGNORECASE)
+        return text
+
     def _is_valid(self, term: str) -> bool:
         t = term.lower().strip()
         if not t or len(t) < 2:
@@ -222,41 +308,96 @@ class SkillsExtractorV2:
         return skills
 
     def extract_capitalized_terms(self, text: str) -> Counter:
+        """Method 3 — captures multi-word capitalized phrases AND standalone acronyms.
+        Examples: 'Patient Care', 'Primary Care Setting', 'EHR', 'HIPAA', 'Tableau'.
+        Lone fragments like 'Care' or 'Time' are filtered out in extract_skills()."""
         counts: Counter = Counter()
-        pattern = r'\b[A-Z][A-Za-z0-9+#\.\-]{1,30}\b'
-        for match in re.finditer(pattern, text):
+
+        common_words = re.compile(
+            r'^(The|This|That|These|Those|Our|Your|Their|We|You|He|She|They|It|'
+            r'As|At|If|But|So|Yet|For|Nor|Or|And|In|Of|To|A|An|Is|Are|Was|Were|'
+            r'Be|Been|Being|Have|Has|Had|Do|Does|Did|Will|Would|Could|Should|May|'
+            r'Might|Must|Shall|Can)$'
+        )
+
+        # Pattern A: multi-word capitalized phrases (Patient Care, Primary Care Setting)
+        multi_word_pat = r'\b[A-Z][a-zA-Z0-9]*(?:\s+[A-Z][a-zA-Z0-9]*)+\b'
+        for match in re.finditer(multi_word_pat, text):
+            phrase = match.group(0).strip()
+            phrase_lower = phrase.lower()
+            if phrase_lower in self.stop_words:
+                continue
+            if common_words.match(phrase.split()[0]):
+                continue
+            counts[phrase_lower] += 1
+
+        # Pattern B: standalone acronyms (EHR, HIPAA, ACLS, AWS)
+        acronym_pat = r'\b[A-Z]{2,}\b'
+        for match in re.finditer(acronym_pat, text):
             term = match.group(0)
             term_lower = term.lower()
             if term_lower in self.stop_words:
                 continue
-            if len(term) <= 2:
-                continue
-            if term.isdigit():
-                continue
-            if re.match(r'^(The|This|That|These|Those|Our|Your|Their|We|You|He|She|They|It|As|At|If|But|So|Yet|For|Nor|Or|And)$', term):
-                continue
             counts[term_lower] += 1
+
         return counts
 
     def extract_lowercase_tech(self, text: str) -> Set[str]:
         found = set()
-        pattern = r'\b([a-z][a-z0-9+#\.\-]{1,19})\b'
+        pattern = r'\b([a-z0-9\+\#\.\-]{2,20})\b'
+        
+        whitelist = {
+            'git', 'sql', 'aws', 'css', 'html', 'php', 'api', 'seo', 'roi', 
+            'kpi', 'crm', 'erp', 'b2b', 'b2c', 'saas', 'paas', 'iaas', 'json',
+            'xml', 'csv', 'pdf', 'linux', 'unix', 'macos', 'windows', 'ios',
+            'android', 'java', 'rust', 'ruby', 'perl', 'bash', 'yaml',
+            'python', 'javascript', 'typescript', 'react', 'angular', 'vue',
+            'node', 'docker', 'kubernetes', 'azure', 'gcp', 'mysql', 'postgres',
+            'mongodb', 'redis', 'django', 'flask', 'fastapi', 'spring', 'boot',
+            'laravel', 'sass', 'less', 'webpack', 'babel', 'c++', 'c#', '.net',
+            'go', 'swift', 'kotlin', 'dart', 'flutter', 'xamarin', 'ionic',
+            'github', 'gitlab', 'bitbucket', 'jira', 'confluence', 'trello',
+            'asana', 'slack', 'agile', 'scrum', 'kanban', 'waterfall', 'devops',
+            'jenkins', 'travis', 'circleci', 'heroku', 'digitalocean', 'firebase',
+            'supabase', 'graphql', 'rest', 'ruby on rails', 'react native',
+            'excel', 'word', 'powerpoint', 'office',
+            # Civil / Structural Engineering tools
+            'autocad', 'revit', 'etabs', 'sap2000', 'staad', 'tekla', 'robot',
+            'archicad', 'rhino', 'sketchup', 'lumion', 'navisworks', 'primavera',
+            'powerbi',
+        }
+        
         for match in re.finditer(pattern, text.lower()):
             term = match.group(1)
             if term in self.stop_words:
                 continue
             if len(term) < 2:
                 continue
-            if re.search(r'[0-9\+\#\.]', term) or (len(term) <= 5 and term.isalpha()):
+                
+            has_special = bool(re.search(r'[0-9\+\#\.]', term))
+            in_whitelist = term in whitelist
+            is_short = len(term) <= 4 and term.isalpha()
+            
+            if has_special or in_whitelist or is_short:
                 found.add(term)
         return found
 
     def extract_skills(self, text: str, max_skills: int = 30) -> Dict[str, List[str]]:
+        # Strip scheduling/logistics patterns first (domain-agnostic)
+        text = self._strip_non_skills(text)
         text = self._clean_text(text)
+
         phrases           = self.extract_phrases(text)
         indicator_skills  = self.extract_indicator_skills(text)
         cap_counts        = self.extract_capitalized_terms(text)
-        cap_ranked        = [term for term, _ in cap_counts.most_common(50)]
+
+        # Filter Method 3: only keep acronyms (all-caps) or multi-word phrases.
+        # This prevents lone fragments like 'Care', 'Time', 'Role' from surviving.
+        cap_ranked = [
+            term for term, _ in cap_counts.most_common(50)
+            if len(term) >= 4 and (term.replace(' ', '').isupper() or ' ' in term)
+        ]
+
         lower_tech        = self.extract_lowercase_tech(text)
 
         seen: Set[str] = set()
@@ -279,6 +420,11 @@ class SkillsExtractorV2:
             'technical_terms': sorted(list(phrases | set(cap_ranked[:20])))[:15],
         }
 
+    def _normalize_skill(self, skill: str) -> str:
+        """Strip spaces, hyphens, underscores and slashes for fuzzy comparison.
+        Catches variants like 'Power BI' vs 'PowerBI', 'scikit-learn' vs 'scikitlearn'."""
+        return re.sub(r'[\s\-_/]', '', skill.lower())
+
     def compare_skills(self, cv_text: str, job_text: str) -> Dict:
         """
         Compare CV skills against job-required skills.
@@ -287,6 +433,8 @@ class SkillsExtractorV2:
         - Exact match always counts.
         - Substring match only allowed when BOTH skills are >= 6 characters.
           This prevents 'care' matching 'patient care', 'customer care', etc.
+        - Normalized match: strips spaces/hyphens before comparing, catching
+          variants like 'Power BI' vs 'PowerBI'.
 
         Skills are framed from the JOB's perspective:
           matched_skills = job requirements the CV covers
@@ -303,11 +451,16 @@ class SkillsExtractorV2:
 
         for j_skill in job_skills:
             found = False
+            j_norm = self._normalize_skill(j_skill)
             for c_skill in cv_skills:
                 exact  = j_skill == c_skill
-                j_in_c = len(j_skill) >= 6 and j_skill in c_skill
-                c_in_j = len(c_skill) >= 6 and c_skill in j_skill
-                if exact or j_in_c or c_in_j:
+                j_in_c = len(j_skill) >= 4 and j_skill in c_skill
+                c_in_j = len(c_skill) >= 4 and c_skill in j_skill
+                c_norm = self._normalize_skill(c_skill)
+                norm_match = (len(j_norm) >= 4 and len(c_norm) >= 4) and (
+                    j_norm == c_norm or j_norm in c_norm or c_norm in j_norm
+                )
+                if exact or j_in_c or c_in_j or norm_match:
                     matched.add(j_skill)
                     found = True
                     break

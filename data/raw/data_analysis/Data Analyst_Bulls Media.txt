@@ -1,0 +1,39 @@
+﻿About the job
+Bulls Media is looking to hire a Data Analyst
+
+The role involves both data analytic and technical skills : gathering data , developing tools and dashboards, evaluating data and sharing findings that affect business decisions.
+
+Responsibilities
+
+Working with different company departments and setting business requirements for BI tools
+Translating business requirements into technical ones
+Suggesting technical options to meet the requirements and creating an BI architecture. Providing time estimation
+Leading and executing BI software development, deployment, and maintenance: 
+Creating Power BI reports based on client requirements 
+Taking data from different data sources : databases, internal and external API, google sheets and more
+Developing different visualization levels and dashboards
+Maintaining and optimizing existing reports
+Ensuring data correctness
+Testing reports of other BI developers
+Creating technical documentation for BI tools
+Evaluating data, collating findings relevant to the business, and sharing them in a manner that can bring about an effective change in a business:
+Breaking down key business data: gather, clean, and analyze data
+Interpreting the data: Find patterns or see areas in the data that signal a potential for improvement in business practices
+Sharing findings:visualizing data in graphs and charts, recommendations to improve or grow the business based on their findings
+
+Requirements
+
+At least 2 year experience in a BI developer & data Analyst role
+Experience with PowerBI including a good knowledge of DAX
+Deep knowledge of SQL Databases and SQL script optimisation
+Good knowledge of excel / Google sheet (formulas)
+Experience with Python
+Non relational database - advantage
+Advanced analysis and problem solving skills
+Attention to detail
+The ability to work both as a team player and independently
+Ability to multitask in a fast-paced environment
+Self learning abilities
+Excellent communication skills with ability to effectively interface with technical and nontechnical staff at all organizational levels
+Fluent in English
+Location - Kyiv or Tirana

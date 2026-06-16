@@ -1,0 +1,71 @@
+About the job
+Company Overview:
+
+
+
+Engineering Albania is a member of Engineering Group, leading digital transformation company based in Italy, with around 14,000 associates and over 80 offices across Europe, the United States, and South America. The Engineering Group consists of more than 50 companies in 21 countries and supports businesses and organizations in their continuous evolution through deep expertise in business processes across all market segments, leveraging the opportunities offered by advanced digital technologies such as Artificial Intelligence, Digital Twin, Cybersecurity, and Cloud, as well as proprietary solutions, backed by over 40 years of experience.
+
+The Group integrates best-of-breed market solutions and managed services and continues to expand its expertise through M&A activities and partnerships with leading technology players.
+
+Engineering invests heavily in innovation through its R&I division and in human capital through its IT & Management Academy.
+
+The Engineering Group positions itself as a key player in the creation of digital ecosystems to connect different markets, developing composable solutions for continuous business transformation.
+
+
+
+We are seeking a Network Security Engineer with strong expertise in load balancers, next-generation firewalls, and enterprise routing and switching. The selected professional will be responsible for implementing change activities, improving infrastructure performance, and supporting perimeter security operations.
+
+
+
+Key Responsibilities
+
+Execute changes on F5 Networks load balancers (e.g., configuration updates, new profiles, routing rules).
+Implement changes on CheckPoint Next Generation Firewalls (e.g., creation of new security policies).
+Manage and configure enterprise network devices: Cisco 7600, Cisco Catalyst 3750, Dell switches, Juniper MX80.
+Create and manage VLANs, trunk configurations, routing adjustments, and L2/L3 network components.
+Ensure the reliability and performance of network and perimeter security infrastructure.
+Collaborate closely with technical teams to support solution evolution and advanced troubleshooting.
+Follow internal change management processes and ensure up-to-date technical documentation.
+Provide availability for on-call service to support operational continuity.
+
+
+Mandatory skills
+
+F5 Networks – Load Balancers
+CheckPoint Next Generation Firewall
+Cisco Routing & Switching Operations
+
+
+Skills and Qualifications:
+
+Hands-on experience managing enterprise network and security infrastructures.
+Strong understanding of networking protocols: TCP/IP, VLANs, routing, switching.
+Ability to operate effectively across multi-vendor environments (Cisco, Dell, Juniper).
+Experience with change execution in high-availability environments.
+Strong analytical and troubleshooting capabilities.
+Fluency in English and Italian.
+
+
+What You Can Expect:
+
+Competitive compensation depending on experience and skills;
+Hybrid work model, option to choose/combine work from home/office;
+Private health insurance;
+FitPass;
+Opportunity to learn 7 different languages using our E-learning platform;
+Great colleagues, open informal, and fun atmosphere;
+Chance to be part of a professional and highly dynamic international environment.
+
+
+We are looking forward to meeting you. Good Luck!
+
+
+Benefits found in job post
+
+Medical insurance
+
+Requirements added by the job poster
+
+• 2+ years of work experience with Cisco 7600
+
+• 2+ years of work experience with Juniper Firewalls

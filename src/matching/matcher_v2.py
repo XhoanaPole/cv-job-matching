@@ -5,11 +5,11 @@ Enhanced CV-to-Job matcher with a 5-signal hybrid scoring formula:
 
   Signal              Weight  Max Points
   ──────────────────  ──────  ──────────
-  Semantic (FAISS)     40 %     40 pts
+  Semantic (FAISS)     35 %     35 pts
   Lexical  (Skills)    20 %     20 pts
   Domain Category      15 %     15 pts
   Education Level      15 %     15 pts
-  Seniority Level      10 %     10 pts
+  Seniority Level      15 %     15 pts
   ──────────────────  ──────  ──────────
   Total               100 %    100 pts
 
@@ -47,6 +47,24 @@ class CVJobMatcherV2:
 
         self.domain_classifier  = DomainClassifier()
         self.profile_classifier = ProfileClassifier()
+        
+        self.weights = {
+            'semantic': 35,
+            'skills': 20,
+            'domain': 15,
+            'education': 15,
+            'seniority': 15
+        }
+
+    def set_weights(self, semantic, skills, domain, education, seniority):
+        """Allows overriding weights dynamically for ablation testing."""
+        self.weights = {
+            'semantic': semantic,
+            'skills': skills,
+            'domain': domain,
+            'education': education,
+            'seniority': seniority
+        }
 
     # ------------------------------------------------------------------
     # Internal scoring helpers
@@ -54,14 +72,16 @@ class CVJobMatcherV2:
 
     def _normalize_faiss(self, raw_score: float) -> float:
         """
-        Squash raw FAISS cosine score into [0, 1] with a baseline penalty.
-        Any score ≤ 0.30 is treated as no signal.
+        Linearly rescales cosine similarity from [0.30, 1.0] → [0.0, 1.0].
+        Scores ≤ 0.30 are treated as no signal and mapped to 0.
+        Baseline of 0.30 reflects the minimum meaningful cosine similarity
+        observed empirically across cross-document text pairs.
         """
         baseline = 0.30
         if raw_score <= baseline:
             return 0.0
         scaled = (raw_score - baseline) / (1.0 - baseline)
-        return float(max(0.0, min(1.0, scaled ** 1.5)))
+        return float(max(0.0, min(1.0, scaled)))
 
     def _compute_hybrid_score(
         self,
@@ -83,11 +103,11 @@ class CVJobMatcherV2:
         education_raw = education_score
         seniority_raw = seniority_score
 
-        semantic_pts  = round(semantic_raw  * 40, 2)   # max 40
-        skills_pts    = round(lexical_raw   * 20, 2)   # max 20
-        domain_pts    = round(domain_raw    * 15, 2)   # max 15
-        edu_pts       = round(education_raw * 15, 2)   # max 15
-        sen_pts       = round(seniority_raw * 10, 2)   # max 10
+        semantic_pts  = round(semantic_raw  * self.weights['semantic'], 2)
+        skills_pts    = round(lexical_raw   * self.weights['skills'], 2)
+        domain_pts    = round(domain_raw    * self.weights['domain'], 2)
+        edu_pts       = round(education_raw * self.weights['education'], 2)
+        sen_pts       = round(seniority_raw * self.weights['seniority'], 2)
 
         final = round(semantic_pts + skills_pts + domain_pts + edu_pts + sen_pts, 2)
 
@@ -199,6 +219,9 @@ class CVJobMatcherV2:
             self._enrich_match(job_id, score, cleaned_cv)
             for job_id, score in zip(job_ids, scores)
         ]
+        matches = sorted(matches,
+                         key=lambda x: x['score_breakdown']['final_hybrid'],
+                         reverse=True)
 
         result = {
             'cv_id':        cv_id or 'unknown',
