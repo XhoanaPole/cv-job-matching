@@ -1,297 +1,198 @@
-# Smart CV Job Matching System
+# Smart CV–Job Matching System
 
-Bachelor Thesis Project: Semantic job matching for junior/entry-level students using embeddings and FAISS.
+**Bachelor Thesis Project** — University Metropolitan Tirana  
+Semantic CV–job matching for junior/entry-level candidates using embeddings, FAISS, and a multi-agent LLM debate protocol.
+
+---
 
 ## Overview
 
-This system matches student CVs with job descriptions using:
-- **Text preprocessing** to normalize CVs and job descriptions
-- **Sentence-Transformers** to generate semantic embeddings
-- **FAISS vector database** for efficient similarity search
-- **FastAPI** to expose matching functionality via REST API
+This system evaluates the fit between a candidate's CV and a job description through a three-stage pipeline:
+
+1. **Semantic Embedding Matching** — Sentence-Transformers + FAISS vector search to compute similarity scores
+2. **LLM Summary & Skills Extraction** — OpenAI-powered skill gap analysis and profile classification
+3. **Agentic Debate Protocol** — A multi-agent system (Advocate, Skeptic, Judge) that reasons over each CV–job pair to produce a final hiring recommendation
+
+The system was evaluated on 153 CV–job pairs across 20+ professional domains, benchmarked against Claude, Gemini, and GPT-4o as reference judges.
+
+---
+
+## Results Summary
+
+| System | Accuracy (153 pairs) |
+|---|---|
+| This system | 77/153 — **50.3%** |
+| Claude (reference) | **81%** |
+| Gemini (reference) | 71.2% |
+| GPT-4o (reference) | 62.7% |
+
+Dataset tiers: 52 Strong matches · 45 Medium matches · 56 Weak matches
+
+---
 
 ## Project Structure
 
 ```
 cv-job-matching/
-├── data/
-│   ├── raw/                    # Raw CVs and job descriptions
-│   │   ├── cvs/
-│   │   └── job_descriptions/
-│   └── processed/              # Cleaned texts and embeddings
 │
 ├── src/
-│   ├── preprocessing/
-│   │   └── text_cleaning.py    # Text normalization
+│   ├── api/
+│   │   └── main.py                  # FastAPI application
+│   ├── agentic_debate/
+│   │   ├── advocate.py              # Argues for the candidate
+│   │   ├── skeptic.py               # Challenges the match
+│   │   ├── judge.py                 # Final verdict agent
+│   │   ├── orchestrator.py          # Manages the debate flow
+│   │   └── roadmap.py               # Career roadmap generation
 │   ├── embeddings/
-│   │   └── embedder.py         # Embedding generation
-│   ├── vector_store/
-│   │   └── faiss_index.py      # FAISS vector database
+│   │   └── embedder.py              # Sentence-Transformer embeddings
 │   ├── matching/
-│   │   └── matcher.py          # Matching logic
-│   └── api/
-│       └── main.py             # FastAPI application
+│   │   ├── matcher_v2.py            # Core matching logic (v2)
+│   │   ├── llm_summary_v2.py        # OpenAI-powered CV/job summaries
+│   │   ├── skills_extractor_v2.py   # Skill gap extraction
+│   │   ├── profile_classifier.py    # Seniority & domain classification
+│   │   └── domain_classifier.py     # Domain detection
+│   ├── preprocessing/
+│   │   ├── document_parser.py       # PDF, DOCX, TXT parser
+│   │   └── text_cleaning.py         # Text normalization
+│   └── vector_store/
+│       └── faiss_index.py           # FAISS vector database
 │
-├── notebooks/
-│   ├── explore_texts.ipynb     # Data exploration
-│   └── similarity_tests.ipynb  # Similarity experiments
+├── frontend/
+│   ├── index_v9.html                # Main UI
+│   ├── app_v9.js                    # Frontend logic
+│   └── styles_v9.css                # Styles
 │
+├── data/
+│   └── raw/                         # 20+ domain folders (CVs + job descriptions)
+│       ├── Artificial Intelligence and Machine Learning/
+│       ├── Software Engineering/
+│       ├── Finance/
+│       ├── Law/
+│       ├── Medicine/
+│       └── ... (20+ domains)
+│
+├── evaluation/
+│   ├── ablation_study.py            # Ablation methodology
+│   ├── run_all_evaluations.py       # Full evaluation pipeline
+│   ├── run_all_pairs.py             # Pair-level evaluation runner
+│   ├── run_ablation_semantic.py     # Semantic ablation runner
+│   ├── compute_metrics.py           # Metrics computation
+│   ├── ablation_results_final.csv   # Final ablation results
+│   ├── ablation_semantic_A.csv      # Semantic ablation set A
+│   └── ablation_semantic_B.csv      # Semantic ablation set B
+│
+├── results/
+│   └── full_evaluation.csv          # Full 153-pair evaluation results
+│
+├── tests/                           # Test suite
+├── Dockerfile
+├── docker-compose.yml
 ├── requirements.txt
 └── README.md
 ```
 
+---
+
 ## Installation
 
-### 1. Create Virtual Environment
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/XhoanaPole/cv-job-matching.git
+cd cv-job-matching
+```
+
+### 2. Create and activate virtual environment
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
 ```
 
-### 2. Install Dependencies
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Download NLTK Data (optional)
+### 4. Set up environment variables
 
-```python
-import nltk
-nltk.download('punkt')
-nltk.download('stopwords')
+Create a `.env` file in the project root:
+
+```
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-## Quick Start
+---
 
-### Option 1: Python Script
+## Running the System
 
-```python
-from src.preprocessing.text_cleaning import TextCleaner
-from src.embeddings.embedder import TextEmbedder
-from src.vector_store.faiss_index import FAISSJobIndex
-from src.matching.matcher import CVJobMatcher
-
-# Initialize components
-cleaner = TextCleaner()
-embedder = TextEmbedder(model_name='all-MiniLM-L6-v2')
-faiss_index = FAISSJobIndex(embedding_dim=embedder.embedding_dim)
-
-# Add jobs to index
-job_texts = ["Job description 1...", "Job description 2..."]
-job_ids = ["job_1", "job_2"]
-
-cleaned_jobs = cleaner.clean_batch(job_texts)
-job_embeddings = embedder.embed_batch([r['cleaned_text'] for r in cleaned_jobs])
-faiss_index.add_jobs(job_embeddings, job_ids)
-
-# Match CV
-matcher = CVJobMatcher(cleaner, embedder, faiss_index)
-cv_text = "Student CV text..."
-results = matcher.match_cv_to_jobs(cv_text, cv_id="cv_1", top_k=5)
-
-print(results)
-```
-
-### Option 2: FastAPI Server
+### Option 1: FastAPI Server
 
 ```bash
-# Start the API server
-cd src/api
-python main.py
-
-# Or use uvicorn
-uvicorn main:app --reload --port 8000
+uvicorn src.api.main:app --reload --port 8000
 ```
 
-Visit `http://localhost:8000/docs` for interactive API documentation.
+Visit `http://localhost:8000/docs` for the interactive API documentation.
+
+### Option 2: Docker
+
+```bash
+docker-compose up --build
+```
+
+---
 
 ## API Endpoints
 
-### 1. Add Job Descriptions
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/match` | Match a CV against job descriptions |
+| `POST` | `/match/upload` | Upload CV file for matching |
+| `POST` | `/debate` | Run the full agentic debate on a CV–job pair |
+| `GET` | `/health` | Health check |
 
-```bash
-curl -X POST "http://localhost:8000/jobs/add" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "job_id": "job_001",
-    "description": "Junior Software Developer position..."
-  }'
-```
-
-### 2. Match CV to Jobs
+### Example: Match CV to Jobs
 
 ```bash
 curl -X POST "http://localhost:8000/match" \
   -H "Content-Type: application/json" \
   -d '{
-    "cv_text": "Computer Science student with Python skills...",
-    "cv_id": "cv_001",
+    "cv_text": "Computer Science graduate with Python and ML experience...",
     "top_k": 5
   }'
 ```
 
-Response:
-```json
-{
-  "cv_id": "cv_001",
-  "matches": [
-    {"job_id": "job_001", "score": 0.82},
-    {"job_id": "job_003", "score": 0.78}
-  ]
-}
-```
+---
 
-### 3. Upload CV File
+## Evaluation
+
+Run the full evaluation pipeline:
 
 ```bash
-curl -X POST "http://localhost:8000/match/upload" \
-  -F "file=@path/to/cv.txt" \
-  -F "top_k=10"
+cd evaluation
+python run_all_evaluations.py
 ```
 
-## Usage Examples
+Run the ablation study:
 
-### Example 1: Build Complete System
-
-```python
-import os
-from pathlib import Path
-from src.preprocessing.text_cleaning import TextCleaner, load_text_file
-from src.embeddings.embedder import TextEmbedder, EmbeddingPipeline
-from src.vector_store.faiss_index import FAISSJobIndex
-from src.matching.matcher import CVJobMatcher
-
-# Initialize
-cleaner = TextCleaner(remove_emails=True, remove_phone=True)
-embedder = TextEmbedder(model_name='all-MiniLM-L6-v2')
-
-# Load job descriptions
-job_dir = Path('data/raw/job_descriptions')
-jobs = []
-job_ids = []
-for file in job_dir.glob('*.txt'):
-    jobs.append(load_text_file(file))
-    job_ids.append(file.stem)
-
-# Process jobs
-pipeline = EmbeddingPipeline(cleaner, embedder)
-job_data = pipeline.process_texts(jobs, job_ids)
-
-# Create FAISS index
-faiss_index = FAISSJobIndex(embedding_dim=embedder.embedding_dim)
-faiss_index.add_jobs(
-    job_data['embeddings'],
-    job_data['text_ids'],
-    job_data['cleaned_texts']
-)
-
-# Save index
-faiss_index.save('data/processed/faiss.index', 'data/processed/metadata.pkl')
-
-# Create matcher
-matcher = CVJobMatcher(cleaner, embedder, faiss_index)
-
-# Match CVs
-cv_dir = Path('data/raw/cvs')
-for cv_file in cv_dir.glob('*.txt'):
-    cv_text = load_text_file(cv_file)
-    results = matcher.match_cv_to_jobs(cv_text, cv_id=cv_file.stem, top_k=5)
-    print(f"\n{cv_file.name}:")
-    for match in results['matches']:
-        print(f"  - {match['job_id']}: {match['score']:.3f}")
+```bash
+python ablation_study.py
 ```
 
-### Example 2: Jupyter Notebook Analysis
+---
 
-See `notebooks/explore_texts.ipynb` for interactive exploration.
+## Dataset
 
-## Design Choices & Justification
+20+ professional domains, each containing sample CVs and job descriptions:
 
-### 1. Sentence-Transformers Model
-- **Choice**: `all-MiniLM-L6-v2`
-- **Why**: Lightweight (384 dimensions), fast, good semantic understanding
-- **Alternative**: `all-mpnet-base-v2` (768 dimensions, more accurate but slower)
+Architecture · AI/ML · Business Administration · Civil Engineering · Cybersecurity · Dentistry · Economics · Education · Electrical Engineering · Film & Video · Finance · Graphic Design · Hospitality · Human Resources · Journalism · Law · Logistics · Marketing · Mechanical Engineering · Medicine · Nursing · Pharmacy · Project Management · Psychology · Social Work · Software Engineering · Data Analysis
 
-### 2. FAISS Index Type
-- **Choice**: `IndexFlatL2` (brute-force L2 distance)
-- **Why**: Small dataset, guaranteed best results, simple
-- **Alternative**: Use `IndexIVFFlat` for large datasets (>100k jobs)
-
-### 3. Text Preprocessing
-- **Removes**: emails, phone numbers, URLs
-- **Normalizes**: lowercase, whitespace
-- **Why**: Focus on skills and experience, not formatting
-
-### 4. Similarity Metric
-- **Choice**: L2 distance converted to similarity score
-- **Formula**: `1 / (1 + distance)`
-- **Why**: Intuitive scores in [0, 1] range
-
-## Evaluation Strategy
-
-### 1. Manual Inspection
-Create test cases for:
-- Junior developer CV → software jobs
-- CV with no experience → entry-level jobs
-- Student with specific skills → matching roles
-
-### 2. Compare Configurations
-Test different parameters:
-- With/without text cleaning
-- Different embedding models
-- Top-K values (5, 10, 20)
-
-### 3. Case Studies
-Document 3-5 examples showing:
-- CV text
-- Top 3 matched jobs
-- Why matches make sense (or don't)
-
-## Development Workflow
-
-1. **Prepare Data**: Add CV and job text files to `data/raw/`
-2. **Explore**: Use notebooks to test preprocessing and embeddings
-3. **Build Index**: Run script to create FAISS index
-4. **Test Matching**: Use API or Python to test matches
-5. **Evaluate**: Document results and design choices
-6. **Iterate**: Adjust parameters based on results
-
-## Thesis Deliverables Checklist
-
-- [ ] Text preprocessing pipeline
-- [ ] Embedding generation system
-- [ ] FAISS vector database
-- [ ] Matching algorithm
-- [ ] FastAPI REST API
-- [ ] Evaluation results
-- [ ] Documentation of design choices
-- [ ] Code repository with examples
-
-## Troubleshooting
-
-### Issue: Low similarity scores
-- Check if text cleaning is too aggressive
-- Try different embedding models
-- Ensure CV and job texts have sufficient content
-
-### Issue: Out of memory
-- Process CVs in smaller batches
-- Use `faiss-cpu` instead of `faiss-gpu`
-- Reduce embedding dimension
-
-### Issue: Slow matching
-- Use batch processing for multiple CVs
-- Consider approximate FAISS index for large datasets
-
-## Next Steps
-
-1. Collect sample CVs and job descriptions
-2. Run initial experiments in notebooks
-3. Build and test the full pipeline
-4. Evaluate results and document findings
-5. Write thesis chapters explaining approach
+---
 
 ## License
 
@@ -299,6 +200,6 @@ This is a bachelor thesis project for educational purposes.
 
 ## Contact
 
-Xhoana Pole  
-University Metropolitan Tirana 
-xhoana.pole23@umt.edu.al
+**Xhoana Pole**  
+University Metropolitan Tirana  
+xhoanapole18@gmail.com
