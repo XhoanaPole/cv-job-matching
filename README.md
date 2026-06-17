@@ -64,13 +64,34 @@ cv-job-matching/
 │   └── styles_v9.css                # Styles
 │
 ├── data/
-│   └── raw/                         # 20+ domain folders (CVs + job descriptions)
+│   └── raw/                         # 27 domain folders (CVs + job descriptions)
+│       ├── Architecture/
 │       ├── Artificial Intelligence and Machine Learning/
-│       ├── Software Engineering/
+│       ├── Business Administration/
+│       ├── Civil Engineering/
+│       ├── Cybersecurity/
+│       ├── Dentistry/
+│       ├── Economics/
+│       ├── Education and Teaching/
+│       ├── Electrical Engineering/
+│       ├── Film and Video Production/
 │       ├── Finance/
+│       ├── Graphic Design/
+│       ├── Hospitality and Tourism/
+│       ├── Human Resources/
+│       ├── Journalism and Media/
 │       ├── Law/
+│       ├── Logistics and Supply Chain/
+│       ├── Marketing/
+│       ├── Mechanical Engineering/
 │       ├── Medicine/
-│       └── ... (20+ domains)
+│       ├── Nursing/
+│       ├── Pharmacy/
+│       ├── Project Menagement/
+│       ├── Psychology/
+│       ├── Social Work/
+│       ├── data_analysis/
+│       └── software_engineering/
 │
 ├── evaluation/
 │   ├── ablation_study.py            # Ablation methodology
@@ -190,7 +211,7 @@ python ablation_study.py
 
 20+ professional domains, each containing sample CVs and job descriptions:
 
-Architecture · AI/ML · Business Administration · Civil Engineering · Cybersecurity · Dentistry · Economics · Education · Electrical Engineering · Film & Video · Finance · Graphic Design · Hospitality · Human Resources · Journalism · Law · Logistics · Marketing · Mechanical Engineering · Medicine · Nursing · Pharmacy · Project Management · Psychology · Social Work · Software Engineering · Data Analysis
+Architecture · Artificial Intelligence and Machine Learning · Business Administration · Civil Engineering · Cybersecurity · Dentistry · Economics · Education and Teaching · Electrical Engineering · Film and Video Production · Finance · Graphic Design · Hospitality and Tourism · Human Resources · Journalism and Media · Law · Logistics and Supply Chain · Marketing · Mechanical Engineering · Medicine · Nursing · Pharmacy · Project Management · Psychology · Social Work · Data Analysis · Software Engineering
 
 ---
 
