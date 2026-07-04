@@ -225,4 +225,4 @@ This is a bachelor thesis project for educational purposes.
 
 **Xhoana Pole**  
 University Metropolitan Tirana  
-xhoana.pole23@umt.edu.al · xhoanapole18@gmail.com
+xhoana.pole23@umt.edu.al
