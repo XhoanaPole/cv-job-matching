@@ -87,11 +87,11 @@ cv-job-matching/
 │       ├── Medicine/
 │       ├── Nursing/
 │       ├── Pharmacy/
-│       ├── Project Menagement/
+│       ├── Project Management/
 │       ├── Psychology/
 │       ├── Social Work/
-│       ├── data_analysis/
-│       └── software_engineering/
+│       ├── Data Analysis/
+│       └── Software Engineering/
 │
 ├── evaluation/
 │   ├── ablation_study.py            # Ablation methodology
@@ -102,9 +102,6 @@ cv-job-matching/
 │   ├── ablation_results_final.csv   # Final ablation results
 │   ├── ablation_semantic_A.csv      # Semantic ablation set A
 │   └── ablation_semantic_B.csv      # Semantic ablation set B
-│
-├── results/
-│   └── full_evaluation.csv          # Full 153-pair evaluation results
 │
 ├── tests/                           # Test suite
 ├── Dockerfile
@@ -172,10 +169,15 @@ docker-compose up --build
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/match` | Match a CV against job descriptions |
-| `POST` | `/match/upload` | Upload CV file for matching |
-| `POST` | `/debate` | Run the full agentic debate on a CV–job pair |
-| `GET` | `/health` | Health check |
+| `POST` | `/match` | Match a CV (text) against the job index |
+| `POST` | `/match/upload` | Upload a CV file for matching |
+| `POST` | `/compare/upload` | Upload CV + job files for a dynamic comparison |
+| `POST` | `/compare/text` | Compare pasted CV and job texts (JSON) |
+| `POST` | `/compare/debate` | Run the agentic debate on a CV–job pair |
+| `POST` | `/jobs/add` | Add a single job to the index |
+| `POST` | `/jobs/add_batch` | Add multiple jobs to the index |
+| `GET` | `/stats` | Index statistics |
+| `GET` | `/` | Health check |
 
 ### Example: Match CV to Jobs
 
@@ -223,4 +225,4 @@ This is a bachelor thesis project for educational purposes.
 
 **Xhoana Pole**  
 University Metropolitan Tirana  
-xhoanapole18@gmail.com
+xhoana.pole23@umt.edu.al · xhoanapole18@gmail.com
