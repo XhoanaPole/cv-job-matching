@@ -33,7 +33,6 @@ def generate_single_summary(match_info):
     job_text = match_info.get('job_text', '')[:2000]
 
     api_key = os.environ.get("OPENAI_API_KEY", "")
-    print(f"[DEBUG] OPENAI_API_KEY present: {bool(api_key)}")
     if not api_key:
         match_info['llm_summary'] = "OpenAI API Key is missing. Please provide one to enable AI Analysis."
         return match_info
@@ -127,7 +126,6 @@ Return ONLY this JSON:
                 gap['skills_source'] = 'llm'
 
             match_info['llm_summary'] = parsed.get('summary', '')
-            print(f"[DEBUG] LLM extracted {len(parsed.get('matched_skills',[]))} matched, {len(parsed.get('missing_skills',[]))} missing skills")
 
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8', errors='replace')
@@ -148,8 +146,6 @@ Return ONLY this JSON:
 
 
 def enrich_matches_with_llm(matches):
-    print(f"[DEBUG] === Starting LLM enrichment for {len(matches)} matches ===")
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         list(executor.map(generate_single_summary, matches))
-    print(f"[DEBUG] === LLM enrichment complete ===")
     return matches
