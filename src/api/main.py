@@ -19,7 +19,6 @@ from preprocessing.text_cleaning import TextCleaner
 from preprocessing.document_parser import DocumentParser
 from embeddings.embedder import TextEmbedder
 from vector_store.faiss_index import FAISSJobIndex
-from matching.matcher import CVJobMatcher          # v1 — kept for reference
 from matching.matcher_v2 import CVJobMatcherV2     # v2 — 5-signal hybrid (active)
 from matching.llm_summary_v2 import enrich_matches_with_llm
 from agentic_debate.orchestrator import DebateOrchestrator
